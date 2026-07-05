@@ -111,8 +111,9 @@ Goal: walk-forward bankroll simulation over the Top-5, honest metrics, baselines
       design-vs-holdout split. STILL OPEN — threshold/min_train/half-life knobs not yet trial-logged.
 - [x] Metrics + verdict (D2): yield-with-bootstrap-CI, drawdown, CLV + CLV beat-rate, min-bet-count
       CI-vs-0 verdict. DONE 2026-07-05 (`backtest/metrics.py`).
-- [ ] Leak guards (D3): hard fit-window (walk-forward no-lookahead PROVEN by test) + odds-provenance
-      (selection ignores `is_closing` rows, tested) DONE; **label-permutation/placebo test STILL OPEN**.
+- [x] Leak guards (D3): hard fit-window (walk-forward no-lookahead PROVEN by test) + odds-provenance
+      (selection ignores `is_closing` rows, tested) + **label-permutation/placebo test**
+      (`backtest/placebo.py`, detects a guaranteed-win leak, 2 tests). DONE 2026-07-05.
 - [x] Baselines: always-home, always-favorite, always-over-2.5. DONE 2026-07-05
       (`backtest/baselines.py`).
 - [x] Tests: settle math, staking math, deterministic run, baseline correctness, CLV present/absent.
