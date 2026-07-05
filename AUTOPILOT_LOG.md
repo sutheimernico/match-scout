@@ -72,3 +72,10 @@ One line per iteration. Newest last.
   fair-market recovery + two-way market tested. 7 new tests, gate green (60 total). Next: walk-
   forward calibration eval — Dixon-Coles predictions vs the Shin-de-vigged Pinnacle-closing line
   (Brier/log-loss/reliability), on the real cached data; then tune ξ.
+- 2026-07-05 — Phase 2 (5/n) MILESTONE: leakage-safe `walk_forward_predict` (per-matchday fit on
+  the past only; no-lookahead proven by test) + `calibration.py` (model vs Shin-de-vigged Pinnacle
+  closing, Brier/log-loss, rule-generated verdict) + `scripts/eval_model.py`. 11 new tests, gate
+  green (68 total). FIRST REAL FINDING on E0 2022/23–2023/24 (675 matches, min_train 80): model
+  Brier 0.570 / log-loss 0.965 vs market 0.547 / 0.930 → model does NOT beat the closing line
+  (expected, honest). The harness now measures the real thing. Next: ξ tuning on held-out data;
+  then Phase 3 edge/value-selection (EV on Bet365 price) + Phase 4 backtest engine.

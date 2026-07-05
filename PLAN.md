@@ -67,7 +67,12 @@ Add `scipy` (MLE) with justification.
       weight decaying with match count (D9).
 - [x] Derive full scoreline distribution → 1X2 probs + P(Over/Under 2.5). DONE 2026-07-05
       (`model/poisson.py`). τ-renormalization for Dixon-Coles handled in the DC bullet above.
-- [ ] Calibration report: reliability curve + Brier + log-loss vs. the closing-line-implied probs.
+- [x] Calibration report: Brier + log-loss vs. the closing-line-implied probs (Shin-de-vigged
+      Pinnacle closing). DONE 2026-07-05 (`evaluation/metrics.py`, `evaluation/walk_forward.py`,
+      `evaluation/calibration.py`, `scripts/eval_model.py`). MEASURED on E0 2022/23–2023/24 (675
+      matches, walk-forward, min_train 80, half-life 180d): model Brier 0.570 / log-loss 0.965 vs.
+      market Brier 0.547 / log-loss 0.930 → **model does NOT beat the closing line** (the honest,
+      expected finding). Reliability curve helper available; not yet plotted (dashboard, Phase 8).
 - [ ] Tests: leakage guard (fit window excludes target matchday, hard error), fitted ρ sign +
       reasonableness bound, renormalization tolerance, deterministic seed, **numeric cross-check vs.
       penaltyblog** (offline; adopting it as a dependency → Needs Nico).
