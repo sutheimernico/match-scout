@@ -79,3 +79,7 @@ One line per iteration. Newest last.
   Brier 0.570 / log-loss 0.965 vs market 0.547 / 0.930 → model does NOT beat the closing line
   (expected, honest). The harness now measures the real thing. Next: ξ tuning on held-out data;
   then Phase 3 edge/value-selection (EV on Bet365 price) + Phase 4 backtest engine.
+- 2026-07-05 — Phase 3 (edge): `value/edge.py` — `edge` (EV per unit) + `select_value_bets` (SOLE
+  selection path, D6: EV on Bet365 pre-match price, D5; ignores closing/other-book odds; sorted by
+  edge). 6 new tests, gate green (74 total). Next: Phase 4 backtest engine — settle value bets at
+  the taken price (D4), flat + Kelly staking, CLV, CI-vs-baseline verdict, placebo + odds-provenance.

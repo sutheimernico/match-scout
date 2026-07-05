@@ -87,8 +87,10 @@ Goal: turn model probs + market odds into value bets, vig-honest.
       check (proportional has a favourite-longshot bias, D6). De-vig builds the benchmark/calibration
       probability only — NOT a selection input. DONE 2026-07-05 (`value/devig.py`, Shin via brentq,
       favourite-longshot correction verified, 7 tests).
-- [ ] Edge = `p_model * odds - 1` on the **Bet365 pre-match** price (D5) — the SOLE selection path
+- [x] Edge = `p_model * odds - 1` on the **Bet365 pre-match** price (D5) — the SOLE selection path
       (D6); value-bet selection above a threshold; markets 1X2 + O/U2.5. Never price at `Max`/`Avg`.
+      DONE 2026-07-05 (`value/edge.py`: `edge`, `select_value_bets`; ignores closing/other books,
+      sorted by edge; 6 tests).
 - [ ] Wettschein/accumulator builder (SECONDARY track, D10): assemble a slip from a day's picks,
       explicitly framed + reported as the honest demonstration that accumulators compound the margin
       and are −EV. Not a headline result.
