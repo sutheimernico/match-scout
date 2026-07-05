@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import Disclaimer from "./components/Disclaimer";
-import HonestHarness from "./components/HonestHarness";
+import HowItWorks from "./components/HowItWorks";
+import Insight from "./components/Insight";
 import TipsBoard from "./components/TipsBoard";
+import TrackRecord from "./components/TrackRecord";
+import Verdict from "./components/Verdict";
 import type { BacktestData, Meta, TipsData } from "./types";
 
-// Vite serves public/ at BASE_URL; fetch the static JSON relative to it so it works both
-// locally and under the GitHub Pages sub-path.
+// Vite serves public/ at BASE_URL; fetch the static JSON relative to it so it works both locally
+// (root) and under the GitHub Pages sub-path.
 const base = import.meta.env.BASE_URL;
 
 export default function App() {
@@ -21,18 +24,32 @@ export default function App() {
 
   return (
     <div className="page">
-      <header>
-        <h1>match-scout</h1>
-        <p className="tagline">
-          Honest football prediction &amp; betting-slip simulation — no edge promise.
+      <header className="masthead">
+        <p className="kicker">match-scout · an honest football betting lab</p>
+        <h1>
+          A bot bet on{" "}
+          {backtest ? backtest.schemes.flat.summary.n_bets : "hundreds of"} football matches.
+          <br />
+          Did it beat the bookmakers?
+        </h1>
+        <p className="dek">
+          A systematic model predicts every match, finds where it disagrees with the price, and
+          places paper bets — then we measure, honestly, whether it comes out ahead. Spoiler in the
+          number below.
         </p>
+        <span className="paper-chip">● paper-only · no real money</span>
       </header>
-      {meta && <Disclaimer text={meta.disclaimer} />}
-      {backtest && <HonestHarness data={backtest} />}
+
+      {backtest && <Verdict data={backtest} />}
+      {backtest && <TrackRecord data={backtest} />}
+      {backtest && <Insight data={backtest} />}
+      <HowItWorks />
       {tips && <TipsBoard data={tips} />}
+      {meta && <Disclaimer text={meta.disclaimer} />}
       {meta && (
         <footer>
-          Generated {new Date(meta.generated_at).toLocaleString()} · paper-only · MIT
+          Generated {new Date(meta.generated_at).toLocaleDateString()} · educational simulation ·
+          paper stakes only · MIT
         </footer>
       )}
     </div>

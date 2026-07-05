@@ -1,25 +1,81 @@
-// Hand-rolled SVG line chart (no chart library — grid-scout pattern): points are linearly scaled
-// into a fixed viewBox; SVG y grows downward, so the value axis is inverted.
-export default function BankrollChart({ points, start = 1000 }: { points: number[]; start?: number }) {
-  const w = 640;
-  const h = 180;
-  const pad = 6;
-  if (points.length < 2) return null;
+// Hand-rolled SVG time-series chart (no chart library). One value axis (bankroll), a dashed
+// start-baseline, recessive gridlines, two direct-labelled series (flat + Kelly). SVG y grows
+// downward, so the value axis is inverted. Points are scaled into a fixed viewBox.
 
-  const min = Math.min(start, ...points);
-  const max = Math.max(start, ...points);
-  const span = max - min || 1;
-  const x = (i: number) => pad + (i / (points.length - 1)) * (w - 2 * pad);
-  const y = (v: number) => pad + (1 - (v - min) / span) * (h - 2 * pad);
+interface Series {
+  name: string;
+  color: string;
+  points: { date: string; bankroll: number }[];
+}
 
-  const path = points.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-  const last = points[points.length - 1];
-  const up = last >= start;
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function shortDate(iso: string): string {
+  const [y, m] = iso.split("-");
+  return `${MONTHS[Number(m) - 1]} ’${y.slice(2)}`;
+}
+
+export default function BankrollChart({ series, start }: { series: Series[]; start: number }) {
+  const W = 760;
+  const H = 320;
+  const pad = { t: 18, r: 104, b: 38, l: 56 };
+  const n = Math.max(...series.map((s) => s.points.length));
+  if (n < 2) return null;
+
+  const values = series.flatMap((s) => s.points.map((p) => p.bankroll)).concat(start);
+  const lo = Math.floor(Math.min(...values) / 100) * 100;
+  const hi = Math.ceil(Math.max(...values) / 100) * 100;
+
+  const x = (i: number) => pad.l + (i / (n - 1)) * (W - pad.l - pad.r);
+  const y = (v: number) => pad.t + (1 - (v - lo) / (hi - lo)) * (H - pad.t - pad.b);
+
+  const yTicks = [0, 1, 2, 3, 4].map((k) => lo + ((hi - lo) * k) / 4);
+  const xTickIdx = [0, Math.round((n - 1) / 3), Math.round((2 * (n - 1)) / 3), n - 1];
+  const dates = series[0].points;
+
+  const line = (pts: Series["points"]) =>
+    pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.bankroll).toFixed(1)}`).join(" ");
 
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="chart" preserveAspectRatio="none" aria-label="bankroll curve">
-      <line x1={pad} y1={y(start)} x2={w - pad} y2={y(start)} className="baseline" />
-      <path d={path} className={`curve ${up ? "up" : "down"}`} />
+    <svg viewBox={`0 0 ${W} ${H}`} className="chart" role="img" aria-label="bankroll over time">
+      {/* gridlines + y labels */}
+      {yTicks.map((v) => (
+        <g key={v}>
+          <line x1={pad.l} y1={y(v)} x2={W - pad.r} y2={y(v)} className="grid" />
+          <text x={pad.l - 10} y={y(v) + 4} className="ax-y" textAnchor="end">
+            {v}
+          </text>
+        </g>
+      ))}
+      {/* start baseline */}
+      <line x1={pad.l} y1={y(start)} x2={W - pad.r} y2={y(start)} className="baseline" />
+      <text x={W - pad.r + 6} y={y(start) + 4} className="ax-note">
+        start {start}
+      </text>
+      {/* x date labels */}
+      {xTickIdx.map((i) => (
+        <text key={i} x={x(i)} y={H - pad.b + 20} className="ax-x" textAnchor="middle">
+          {shortDate(dates[Math.min(i, dates.length - 1)].date)}
+        </text>
+      ))}
+      {/* series */}
+      {series.map((s) => {
+        const last = s.points[s.points.length - 1];
+        return (
+          <g key={s.name}>
+            <path d={line(s.points)} className="series-line" style={{ stroke: s.color }} />
+            <circle cx={x(s.points.length - 1)} cy={y(last.bankroll)} r={3.5} style={{ fill: s.color }} />
+            <text
+              x={x(s.points.length - 1) + 8}
+              y={y(last.bankroll) + 4}
+              className="series-label"
+              style={{ fill: s.color }}
+            >
+              {s.name} {Math.round(last.bankroll)}
+            </text>
+          </g>
+        );
+      })}
     </svg>
   );
 }

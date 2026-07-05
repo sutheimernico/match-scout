@@ -32,7 +32,7 @@ export interface TipsData {
   error?: string;
 }
 
-export interface BacktestSummary {
+export interface Summary {
   n_bets: number;
   yield: number;
   yield_ci: [number, number];
@@ -44,12 +44,21 @@ export interface BacktestSummary {
   profit: number;
 }
 
+export interface Scheme {
+  summary: Summary;
+  curve: { date: string; bankroll: number }[];
+  verdict: string;
+}
+
 export interface BacktestData {
   league: string;
   seasons: string[];
-  summary: BacktestSummary;
-  verdict: string;
-  bankroll_curve: { date: string; bankroll: number }[];
+  start_bankroll: number;
+  date_range: [string, string];
+  clv_beat_rate: number;
+  clv_mean: number;
+  headline_verdict: string;
+  schemes: { flat: Scheme; kelly: Scheme };
 }
 
 export interface Meta {

@@ -59,18 +59,30 @@ def _backtest(seasons=("2223", "2324")) -> dict:
     odds = pd.concat([provider.fetch_odds("E0", s) for s in seasons], ignore_index=True)
     preds = walk_forward_predict(matches, min_train=80, half_life_days=180.0)
     picks = select_value_bets(preds, odds, threshold=0.05, book="B365")
-    ledger = settle_bets(picks, matches, odds, staking="flat", flat_unit=10.0)
-    summ = summary(ledger)
-    curve = [
-        {"date": str(r.date)[:10], "bankroll": float(r.bankroll_after)}
-        for r in ledger.sort_values("date").itertuples()
-    ]
+
+    schemes = {}
+    for name in ("flat", "kelly"):
+        ledger = settle_bets(
+            picks, matches, odds, staking=name, flat_unit=10.0, start_bankroll=1000.0
+        )
+        summ = summary(ledger)
+        curve = [
+            {"date": str(r.date)[:10], "bankroll": round(float(r.bankroll_after), 2)}
+            for r in ledger.sort_values("date").itertuples()
+        ]
+        schemes[name] = {"summary": summ, "curve": curve, "verdict": verdict(summ)}
+
+    flat = schemes["flat"]["summary"]
+    dates = [p["date"] for p in schemes["flat"]["curve"]]
     return {
         "league": "Premier League",
         "seasons": list(seasons),
-        "summary": summ,
-        "verdict": verdict(summ),
-        "bankroll_curve": curve,
+        "start_bankroll": 1000.0,
+        "date_range": [dates[0], dates[-1]] if dates else [],
+        "clv_beat_rate": flat["clv_beat_rate"],
+        "clv_mean": flat["clv_mean"],
+        "headline_verdict": schemes["flat"]["verdict"],
+        "schemes": schemes,
     }
 
 
@@ -87,7 +99,7 @@ def main() -> None:
 
     backtest = _backtest()
     (OUT / "backtest.json").write_text(json.dumps(backtest, indent=2))
-    print(f"backtest.json: {backtest['summary']['n_bets']} bets, verdict written")
+    print(f"backtest.json: {backtest['schemes']['flat']['summary']['n_bets']} bets, 2 schemes")
 
     meta = {"generated_at": pd.Timestamp.now(tz="UTC").isoformat(), "disclaimer": DISCLAIMER}
     (OUT / "meta.json").write_text(json.dumps(meta, indent=2))
