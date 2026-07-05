@@ -139,3 +139,13 @@ One line per iteration. Newest last.
   labelled, NOT calibrated like the league backtest. CL: machinery works but off-season (no upcoming
   fixtures until the 2026/27 draw). Next: (offer) stronger shrinkage for thin-data tips; GitHub
   Actions live loop needs Nico's remote + secret.
+- 2026-07-05 — Markets layer + richer tips (Nico: all O/U lines, combos, qualification distinction,
+  "research Bet365"). Researched Bet365 markets (subagent) → confirmed goals-only markets are
+  derivable, goalscorer/cards/corners need player/event data (out), outright needs bracket sim.
+  Built `model/markets.py` (all O/U lines, BTTS, correct-score top-N, double-chance, and `to_advance`
+  = knockout qualify via ET+penalties, distinct from 90-min 1X2), exposed `GoalModel.score_matrix`
+  (τ-corrected), rebuilt `tips.py` (full goals board + `suggest_combo`) + CLI. 13 new tests, gate
+  green. LIVE WM 2026: rich board incl. the qualification insight (Portugal–Spain: draw 69% in 90'
+  but Spain 67% to ADVANCE). Goalscorer markets: HONEST NO (no player data). Combos labelled −EV.
+  Offered next: bracket Monte-Carlo for "to win the World Cup" outrights; still-open: thin-data
+  overconfidence (stronger shrinkage), two-legged CL tie modelling.

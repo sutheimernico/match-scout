@@ -43,13 +43,17 @@ class GoalModel:
         log_away = self.base + self.attack[away] - self.defence[home]
         return float(np.exp(log_home)), float(np.exp(log_away))
 
-    def predict(self, home: str, away: str) -> dict[str, dict[str, float]]:
-        """1X2 + Over/Under-2.5 market probabilities for a fixture."""
+    def score_matrix(self, home: str, away: str) -> np.ndarray:
+        """The (tau-corrected) score-probability matrix for a fixture."""
         lam, mu = self.rates(home, away)
         matrix = score_matrix(lam, mu)
         if self.rho:
             matrix = _apply_tau(matrix, lam, mu, self.rho)
-        return market_probs(matrix)
+        return matrix
+
+    def predict(self, home: str, away: str) -> dict[str, dict[str, float]]:
+        """1X2 + Over/Under-2.5 market probabilities for a fixture."""
+        return market_probs(self.score_matrix(home, away))
 
 
 def _apply_tau(matrix: np.ndarray, lam: float, mu: float, rho: float) -> np.ndarray:
