@@ -94,3 +94,10 @@ One line per iteration. Newest last.
   −0.7%. Ran `betting-methodology-reviewer` (D-requirement) before finalizing. Open (D1): trial log +
   DSR/PBO on the knob search; open (D3): label-permutation/placebo test. Next: fold reviewer findings,
   then Phase 5 ML challenger.
+- 2026-07-05 — Phase 4 (D3 placebo): `backtest/placebo.py` — label-permutation test (shuffle
+  outcomes, re-settle), detects a guaranteed-win leak in tests; wired into `run_backtest.py`. 2 new
+  tests, gate green (102 total). Placebo on real E0 2022/23–2023/24: real yield −4.7% vs placebo mean
+  +18.8% (real_exceeds_95pct=False) → reinforces NO positive edge; the model's picks do worse than
+  random outcomes (anti-selection at the margin, consistent with −5.4% CLV). NOTE: the large real-vs-
+  placebo gap warrants interpretation (genuine anti-selection vs placebo base-rate artifact) — flagged
+  for the running methodology reviewer. D1 (trial log/DSR) still open.
