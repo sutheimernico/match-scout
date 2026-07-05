@@ -78,9 +78,10 @@ closing line (it usually is not), that is the reported finding.
 
 Goal: turn model probs + market odds into value bets, vig-honest.
 
-- [ ] De-vig for the benchmark via **Shin's method** (default) + proportional as a sensitivity
+- [x] De-vig for the benchmark via **Shin's method** (default) + proportional as a sensitivity
       check (proportional has a favourite-longshot bias, D6). De-vig builds the benchmark/calibration
-      probability only — NOT a selection input.
+      probability only — NOT a selection input. DONE 2026-07-05 (`value/devig.py`, Shin via brentq,
+      favourite-longshot correction verified, 7 tests).
 - [ ] Edge = `p_model * odds - 1` on the **Bet365 pre-match** price (D5) — the SOLE selection path
       (D6); value-bet selection above a threshold; markets 1X2 + O/U2.5. Never price at `Max`/`Avg`.
 - [ ] Wettschein/accumulator builder (SECONDARY track, D10): assemble a slip from a day's picks,

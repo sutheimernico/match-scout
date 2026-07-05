@@ -66,3 +66,9 @@ One line per iteration. Newest last.
   building block for model calibration, backtest, and ML. 7 new tests, gate green (53 total). Next:
   Shin/proportional de-vig (D6) to build the closing-line benchmark, then the walk-forward
   calibration eval (Dixon-Coles vs the market) + ξ tuning.
+- 2026-07-05 — Phase 3 (de-vig, D6): `value/devig.py` — `booksum`, `devig_proportional`, and
+  `devig_shin` (Shin insider-model via brentq, falls back to proportional if unbracketed).
+  Favourite-longshot correction verified (Shin lifts favourites, trims longshots vs proportional);
+  fair-market recovery + two-way market tested. 7 new tests, gate green (60 total). Next: walk-
+  forward calibration eval — Dixon-Coles predictions vs the Shin-de-vigged Pinnacle-closing line
+  (Brier/log-loss/reliability), on the real cached data; then tune ξ.
