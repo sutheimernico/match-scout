@@ -22,13 +22,19 @@ rare; a positive result is a red flag until proven otherwise.
    kickoff. Check that closing (`C`) odds are only used when the bet is settled/evaluated, never
    as the price you "got" if the bet was placed earlier; that pre-match odds used for placement
    were actually available before the model's decision time; and that `timestamp_event` (kickoff)
-   is never used to select or price a bet — only `timestamp_known`. Recommend the shift-test:
-   lag every input by one matchday and re-run; a real edge survives, a leak collapses.
-2. **Vig / margin not removed.** Bookmaker 1X2 odds imply probabilities summing to >1 (the
-   overround). Any "edge" or "value" claim must compare the model probability against the
-   *margin-adjusted* implied probability, and P&L must be settled at the real (with-vig) odds.
-   Flag edge = p_model * odds - 1 computed against raw implied probs without acknowledging the
-   overround, or EV claims that quietly assume fair odds.
+   is never used to select or price a bet — only `timestamp_known`. Bets must be priced at a single
+   a-priori-fixed book's pre-match price (Bet365) — NEVER `Max` (best price in hindsight) or `Avg`
+   (costless-shopping fiction). The one-matchday shift-test is near-powerless here (ratings change
+   slowly) — instead demand: (a) a hard fit-window assertion `train.date < predict.date`; (b) an
+   odds-provenance assertion that the selection/pricing path physically cannot read `is_closing=true`
+   rows; (c) a label-permutation/placebo test — shuffle outcomes and confirm ROI collapses to ≈ −vig.
+2. **Vig / margin & de-vig method.** `edge = p_model * odds - 1` on the real (with-vig) odds is the
+   correct, SOLE selection criterion — the margin already lives in the odds, so this is EV per unit;
+   do not add a second selection path comparing against implied probs. De-vig belongs ONLY to the
+   benchmark/calibration probability, and it must use **Shin's method** (or power/log), NOT
+   proportional normalization — proportional de-vig has a favourite-longshot bias that can
+   manufacture a fake edge on longshots (away underdogs, Under 2.5). Flag proportional de-vig used
+   for the benchmark, EV claims that assume fair odds, or a benchmark not settled at real odds.
 3. **Survivorship & selection bias in the bet sample.** Check handling of promoted/relegated
    teams (league composition changes each season), void/postponed matches, and whether only
    "nice" markets/leagues/seasons were kept. A backtest that silently drops matches with missing
@@ -36,11 +42,15 @@ rare; a positive result is a red flag until proven otherwise.
 4. **Point-in-time integrity.** The goal model (Dixon-Coles/Elo) and any ML features must be fit
    ONLY on matches before the bet's matchday. Look for full-history fits leaking future results,
    time-decay windows that peek forward, or features computed on the whole season at once.
-5. **Overfitting / multiple-market testing.** Searching many markets, edge thresholds, leagues,
-   or model hyperparameters inflates the best result. Require a rising significance hurdle
-   (Deflated-Sharpe / PBO analog for ROI), purged+embargoed walk-forward for the ML challenger,
-   and a logged trial count. Flag Kelly staking that overbets (full Kelly on a noisy edge) or a
-   flat-stake ROI reported without turnover/variance context.
+5. **Overfitting / multiple-testing — including on the headline path.** Searching many markets,
+   edge thresholds, leagues, time-decay ξ, or model hyperparameters inflates the best result. The
+   rising significance hurdle (Deflated-Sharpe / PBO analog) and the logged trial count must cover
+   the **Dixon-Coles headline path**, not just the ML challenger — and **subgroup slices**
+   (per-league / per-market / per-selection breakdowns) count as trials. Reject a "profitable" claim
+   that holds only in one slice without a trial penalty, or a headline config chosen after seeing
+   the reported fold (require pre-registration or a design-fold/holdout-fold split). Flag Kelly that
+   overbets (winner's-curse on a noisy edge; correlated same-day bets) and any ROI reported as a
+   point estimate without a bootstrap/Wilson CI vs. the closing-line baseline and a minimum bet count.
 6. **Benchmark & metric discipline.** ROI alone is banned. Require: probabilistic calibration
    (Brier, log-loss, reliability curve), yield (profit/turnover), max drawdown, and closing-line
    value (CLV) — and every strategy must be measured against the closing-line-implied probability

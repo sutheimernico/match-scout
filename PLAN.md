@@ -31,30 +31,38 @@ Goal: canonical, source-agnostic match + odds tables from free sources, behind a
 - [ ] Provider seam: abstract `MatchDataProvider` + `OddsProvider` interfaces; `FakeProvider` with
       recorded fixtures for tests.
 - [ ] football-data.co.uk fetcher: per-season/per-league CSV download (httpx, retry/backoff),
-      column mapping → canonical `matches` + `odds` (1X2 + O/U2.5, individual books + Avg/Max,
-      `is_closing` from `C` columns). Raw CSV → `.cache/` (gitignored).
+      **per-era column mapping** (`Bb`-prefixed ≤2018/19 → flat `Max/Avg` 2019/20+, D8) → canonical
+      `matches` + `odds` (1X2 + O/U2.5). Keep Bet365 (`B365`/`B365C`), Pinnacle (`PS`/`PSC`), Avg,
+      Max as distinct `book` values; `is_closing` from `C` columns. Raw CSV → `.cache/` (gitignored).
+- [ ] Odds-timestamp data-quality check (D7): measure pre-`C` vs `C` odds gap/variance; confirm
+      pre-match columns precede kickoff; document `timestamp_known` imputation (kickoff − N h).
 - [ ] Read-through cache: Parquet under `.cache/`, freshness vs. injected run-date; skip complete
       past seasons, refresh current season.
 - [ ] Canonical schema + validation (`data_quality`): missing-odds rate, void/postponed flags,
       dedupe, promoted/relegated team continuity.
 - [ ] football-data.org fetcher (optional, key-gated): CL/WM fixtures/results → canonical `matches`
       (no odds). Degrades gracefully to "no key → skip" without failing the pipeline.
-- [ ] Tests: column-mapping on a recorded CSV fixture, cache read-through, closing-vs-pre-match
-      labeling, no-live-network guarantee.
-Acceptance: `scripts/ingest.py` builds canonical Parquet for the Top-5 from cached fixtures; gate green.
+- [ ] Tests: column-mapping on recorded CSV fixtures **from BOTH schema eras** (D8), cache
+      read-through, closing-vs-pre-match labeling, `book` separation, no-live-network guarantee.
+Acceptance: `scripts/ingest.py` builds canonical Parquet for the Top-5 (1X2 from 2013/14+, O/U2.5
+from 2019/20+) from cached fixtures; gate green.
 
 ## Phase 2 — Goal model (Dixon-Coles + Elo)
 
 Goal: pre-match probabilities for 1X2 + O/U2.5 from a fitted goal model, honestly validated.
 Add `scipy` (MLE) with justification.
 
-- [ ] Elo/attack-defence baseline ratings (simplest reference).
-- [ ] Dixon-Coles: bivariate Poisson + low-score correction + exponential time-decay; MLE fit on
-      matches strictly BEFORE the prediction matchday.
-- [ ] Derive full scoreline distribution → 1X2 probs + P(Over/Under 2.5).
+- [ ] Elo/attack-defence baseline ratings + a ρ=0/no-decay Poisson ablation (D9).
+- [ ] Dixon-Coles: **independent Poisson + τ low-score correction** (4-cell) + exponential
+      time-decay; MLE (scipy) fit on matches strictly BEFORE the prediction matchday. Single global
+      home-advantage constant. **ξ tuned via held-out log-lik/Brier (walk-forward), not hardcoded.**
+- [ ] Promoted-team cold-start: shrink new-team attack/defence toward the league mean, regularization
+      weight decaying with match count (D9).
+- [ ] Derive full scoreline distribution → 1X2 probs + P(Over/Under 2.5); renormalize after τ.
 - [ ] Calibration report: reliability curve + Brier + log-loss vs. the closing-line-implied probs.
-- [ ] Tests: leakage guard (fit window excludes target matchday), deterministic seed, probability
-      sums, known-fixture sanity.
+- [ ] Tests: leakage guard (fit window excludes target matchday, hard error), fitted ρ sign +
+      reasonableness bound, renormalization tolerance, deterministic seed, **numeric cross-check vs.
+      penaltyblog** (offline; adopting it as a dependency → Needs Nico).
 Acceptance: `reports/model_eval.json` + markdown; if Dixon-Coles is not better-calibrated than the
 closing line (it usually is not), that is the reported finding.
 
@@ -62,27 +70,43 @@ closing line (it usually is not), that is the reported finding.
 
 Goal: turn model probs + market odds into value bets, vig-honest.
 
-- [ ] Implied-prob-from-odds with **overround removal** (proportional + a note on why it matters).
-- [ ] Edge = `p_model * odds - 1`; value-bet selection above a threshold; markets 1X2 + O/U2.5.
-- [ ] Wettschein/accumulator builder: assemble a slip from a day's picks, tracked as a SEPARATE
-      track with an explicit note that accumulators compound the margin and are −EV.
-- [ ] Tests: overround removal math, edge sign, void handling, accumulator odds product.
+- [ ] De-vig for the benchmark via **Shin's method** (default) + proportional as a sensitivity
+      check (proportional has a favourite-longshot bias, D6). De-vig builds the benchmark/calibration
+      probability only — NOT a selection input.
+- [ ] Edge = `p_model * odds - 1` on the **Bet365 pre-match** price (D5) — the SOLE selection path
+      (D6); value-bet selection above a threshold; markets 1X2 + O/U2.5. Never price at `Max`/`Avg`.
+- [ ] Wettschein/accumulator builder (SECONDARY track, D10): assemble a slip from a day's picks,
+      explicitly framed + reported as the honest demonstration that accumulators compound the margin
+      and are −EV. Not a headline result.
+- [ ] Tests: Shin/proportional de-vig math, edge sign, single-book pricing, void handling,
+      accumulator odds product.
 Acceptance: given predictions + odds, emits a ranked value-bet list per matchday; gate green.
 
 ## Phase 4 — Backtest engine (first real run — the core deliverable)
 
 Goal: walk-forward bankroll simulation over the Top-5, honest metrics, baselines.
 
-- [ ] Walk-forward loop: per matchday fit model on past only → value bets → settle at real odds
-      (place at pre-match, measure CLV vs. closing).
-- [ ] Bankroll accounting + staking: flat 1u AND 0.25-Kelly as two paper accounts (per-bet cap).
-- [ ] Metrics: ROI, yield (profit/turnover), max drawdown, calibration, CLV; rule-generated verdict.
-- [ ] Baselines: always-home, always-favorite, always-over-2.5, closing-line-implied.
-- [ ] Shift-test (lag inputs one matchday) as a leakage check.
-- [ ] Tests: known-outcome settle math, staking math, deterministic run, baseline correctness.
+- [ ] Walk-forward loop: per matchday fit model on past only → value bets → **settle strictly at the
+      taken Bet365 pre-match price** (D4); Pinnacle closing feeds ONLY the CLV metric.
+- [ ] Bankroll accounting + staking: **flat 1u = headline** (order-independent); 0.25-Kelly a
+      SECONDARY track — edge shrunk toward the market before staking, joint Kelly for same-day bets,
+      hard per-bet cap ≤5% bankroll (D10).
+- [ ] Trial log + whole-harness anti-overfit (D1): log EVERY config tried, counting subgroup slices
+      (per-league/market/selection) as trials; rising significance hurdle (DSR/PBO analog) on the
+      Dixon-Coles path; config pre-registered (or design-fold vs holdout-fold split).
+- [ ] Metrics + verdict (D2): ROI-with-CI, yield, max drawdown, calibration, CLV + **CLV beat-rate**
+      (headline); **CI-vs-baseline** rule-generated verdict with a minimum bet count.
+- [ ] Leak guards (D3): hard fit-window assertion; **odds-provenance assertion** (selection path
+      cannot read `is_closing=true` rows); **label-permutation/placebo test** (shuffle outcomes →
+      ROI ≈ −vig). Shift-test kept only as a weak sanity check.
+- [ ] Baselines: always-home, always-favorite, always-over-2.5, ρ=0-Poisson ablation, closing-line-
+      implied.
+- [ ] Tests: settle-at-taken-price assertion, staking math, deterministic run, baseline correctness,
+      placebo collapses to −vig, odds-provenance holds.
 - [ ] **Run `betting-methodology-reviewer`** on `value/` + `backtest/` before claiming any result.
-Acceptance: `scripts/run_backtest.py` produces the bankroll curve + metrics JSON for 2019/20+;
-honest finding reported (likely: does not beat the closing line).
+Acceptance: `scripts/run_backtest.py` produces the calibration/CLV verdict (primary) + bankroll curve
++ metrics JSON (1X2 from 2013/14+, O/U2.5 from 2019/20+); honest CI-vs-baseline finding reported
+(likely: does not beat the closing line).
 
 ## Phase 5 — ML challenger (walled off)
 
@@ -90,8 +114,10 @@ Goal: LightGBM that must beat Dixon-Coles AND the closing line to count. Add `li
 
 - [ ] Feature dataset (pre-match only: ratings, form, rest days, home/away, market-implied prob).
 - [ ] Purged + embargoed walk-forward validation.
-- [ ] Honest scorecard: Brier, log-loss, ROI vs. Dixon-Coles + closing line, shift-test, trial log
-      with a rising significance hurdle (DSR/PBO analog).
+- [ ] Honest scorecard: Brier, log-loss, ROI vs. Dixon-Coles + closing line, placebo test, trial log
+      with a rising significance hurdle (DSR/PBO analog). **Note (D11): "beats Dixon-Coles" is
+      near-guaranteed once the market-implied-prob feature is included and is uninteresting; only
+      "beats the closing line" is the real test — the writeup must say so.**
 Acceptance: `reports/ml_eval.json`; the negative result (if the GBDT does not robustly beat both)
 is reported, not hidden.
 
@@ -134,9 +160,9 @@ Acceptance: publish checklist (see `~/.claude/CLAUDE.md`) satisfied; Needs-Nico 
 
 ## Standing mandate (per AUTOPILOT, once per phase — not per iteration)
 
-- [ ] Research current best practice (recent football-modeling papers, strong public repos, closing-
-      line-value literature) and challenge this plan. If materially better, write an ADR
-      (`docs/adr/`) and adjust. Default to shipping; reopen a decision only with a sourced reason.
+- [x] **Phase 0→1 self-challenge DONE 2026-07-05** — 3-model council (Opus/Sonnet/Sonnet) →
+      `docs/adr/0001-council-methodology-hardening.md` (D1–D11 folded into spec + this plan).
+- [ ] Phase 1→2 and later boundaries: re-run the self-challenge; write an ADR if it changes the plan.
 
 ## Needs Nico (loop cannot do these itself)
 
