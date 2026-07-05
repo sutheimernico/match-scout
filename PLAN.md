@@ -55,13 +55,13 @@ from 2019/20+) from cached fixtures; gate green. — MET (live-verified 2026-07-
 Goal: pre-match probabilities for 1X2 + O/U2.5 from a fitted goal model, honestly validated.
 Add `scipy` (MLE) with justification.
 
-- [ ] Elo/attack-defence baseline ratings + a ρ=0/no-decay Poisson ablation (D9).
-      PARTIAL 2026-07-05: base independent-Poisson scoreline model done (`model/poisson.py`:
-      `score_matrix` + `market_probs` → 1X2 + O/U2.5, 10 tests). This IS the ρ=0 ablation core;
-      Elo ratings + fitting still open.
-- [ ] Dixon-Coles: **independent Poisson + τ low-score correction** (4-cell) + exponential
-      time-decay; MLE (scipy) fit on matches strictly BEFORE the prediction matchday. Single global
-      home-advantage constant. **ξ tuned via held-out log-lik/Brier (walk-forward), not hardcoded.**
+- [x] ρ=0/no-decay Poisson ablation (D9). DONE 2026-07-05: `model/poisson.py` (scoreline→markets)
+      + `model/goal_model.py` (MLE fit of attack/defence + home_adv, ridge shrinkage). VERIFIED on
+      real E0 2023/24: top attack Man City/Arsenal/Newcastle, best defence Arsenal, home_adv +0.20 —
+      recovers reality. Elo-proper rating baseline optional/deferred (the Poisson ablation covers it).
+- [ ] Dixon-Coles: add **τ low-score correction** (4-cell) + exponential **time-decay** on top of
+      the base fit; single global home-advantage constant. **ξ tuned via held-out log-lik/Brier
+      (walk-forward), not hardcoded.** Base MLE fit DONE 2026-07-05 (`fit_poisson`); τ + decay next.
 - [ ] Promoted-team cold-start: shrink new-team attack/defence toward the league mean, regularization
       weight decaying with match count (D9).
 - [x] Derive full scoreline distribution → 1X2 probs + P(Over/Under 2.5). DONE 2026-07-05

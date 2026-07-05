@@ -48,3 +48,10 @@ One line per iteration. Newest last.
   time-decay on top. numpy-only (no scipy yet — added when MLE fitting lands). 10 new tests
   incl. analytic known-value checks, gate green (35 total). Next: fit team attack/defence + home
   advantage (scipy MLE) on pre-matchday data, then the τ correction + time-decay (full DC).
+- 2026-07-05 — Phase 2 (2/n): `model/goal_model.py` — `GoalModel` + `fit_poisson` MLE fit (scipy
+  L-BFGS-B) of per-team attack/defence + global home-advantage + base rate, with ridge shrinkage
+  resolving identifiability + serving as promoted-team shrinkage (D9). Added scipy dep. Deterministic
+  (zero-init). 8 new tests (strength recovery on synthetic league, determinism, error cases). Gate
+  green (43 total). VERIFIED on real E0 2023/24: top attack Man City/Arsenal/Newcastle/Liverpool,
+  best defence Arsenal, home_adv +0.20 — recovers the real season. Next: τ low-score correction +
+  exponential time-decay (full Dixon-Coles), then calibration vs the closing line.
