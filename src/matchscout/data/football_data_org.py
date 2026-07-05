@@ -59,19 +59,16 @@ def _fetch_json(
     headers = {"X-Auth-Token": api_key}
     url = f"{BASE_URL}/competitions/{code}/matches?season={season}"
     try:
-        last: Exception | None = None
         for attempt in range(retries):
-            try:
-                resp = client.get(url, headers=headers)
-                resp.raise_for_status()
-                data = resp.json()
-                break
-            except httpx.HTTPError as exc:  # includes 429 rate-limit
-                last = exc
-                if attempt < retries - 1:
-                    sleep(6.0 * (attempt + 1))  # free tier: 10 req/min
+            resp = client.get(url, headers=headers)
+            if resp.status_code == 429 and attempt < retries - 1:
+                sleep(6.0 * (attempt + 1))  # free tier: 10 req/min — back off and retry
+                continue
+            resp.raise_for_status()  # other 4xx/5xx (e.g. season not available) raise immediately
+            data = resp.json()
+            break
         else:
-            raise RuntimeError(f"failed to fetch {url}") from last
+            raise RuntimeError(f"rate-limited fetching {url} after {retries} attempts")
     finally:
         if owns:
             client.close()
