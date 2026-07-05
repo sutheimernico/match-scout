@@ -149,3 +149,11 @@ One line per iteration. Newest last.
   but Spain 67% to ADVANCE). Goalscorer markets: HONEST NO (no player data). Combos labelled −EV.
   Offered next: bracket Monte-Carlo for "to win the World Cup" outrights; still-open: thin-data
   overconfidence (stronger shrinkage), two-legged CL tie modelling.
+- 2026-07-05 — Phase 8 dashboard (Nico chose: match-scout's own React dashboard + portfolio tile):
+  `scripts/export_site.py` writes static JSON (WM tips + backtest story + bankroll curve) to
+  `site/public/data/`; React 19 + Vite + TS app in `site/` (App + Disclaimer + HonestHarness +
+  hand-rolled SVG BankrollChart + TipsBoard), base `/match-scout/` for Pages, reads static JSON via
+  `import.meta.env.BASE_URL`. `npm run build` green (tsc strict + vite); preview verified serving
+  index + data JSON + JS bundle (all 200). No FastAPI (YAGNI — static export). node_modules + dist
+  gitignored. STILL OPEN: portfolio tile needs the LIVE URL → blocked on Nico's remote + Pages
+  deploy; local view via `npm --prefix site run dev`.

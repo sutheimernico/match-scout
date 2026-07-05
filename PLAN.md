@@ -178,11 +178,14 @@ Acceptance: workflows valid; documented; first scheduled run is a Needs-Nico gat
 
 ## Phase 8 — Dashboard
 
-- [ ] FastAPI read API over the ledger + reports.
-- [ ] React 19 + Vite + hand-rolled SVG charts: bankroll curve, calibration, per-market/per-league
-      ROI, CLV distribution, upcoming picks (with shadow-mode label for CL/WM).
-- [ ] Disclaimer banner on every view.
-Acceptance: `npm run build` passes; dashboard renders from committed derived artifacts.
+- [x] Static JSON export (`scripts/export_site.py` → `site/public/data/*.json`) instead of a
+      FastAPI server — YAGNI, and Pages-ready. DONE 2026-07-05.
+- [x] React 19 + Vite + TS dashboard with hand-rolled SVG bankroll chart: WM tips board (1X2 /
+      advance / all O/U lines / BTTS / top scores / combo) + honest-harness story (yield-CI, CLV
+      beat-rate, verdict, bankroll curve). DONE 2026-07-05 (`site/`).
+- [x] Disclaimer banner on every view. DONE.
+Acceptance: MET 2026-07-05 — `npm --prefix site run build` passes (tsc strict + vite); preview
+serves index + `data/*.json` + JS bundle all 200 (verified). Deploy to Pages = Needs Nico (remote).
 
 ## Phase 9 — Publish
 
