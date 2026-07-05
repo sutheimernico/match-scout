@@ -83,3 +83,14 @@ One line per iteration. Newest last.
   selection path, D6: EV on Bet365 pre-match price, D5; ignores closing/other-book odds; sorted by
   edge). 6 new tests, gate green (74 total). Next: Phase 4 backtest engine — settle value bets at
   the taken price (D4), flat + Kelly staking, CLV, CI-vs-baseline verdict, placebo + odds-provenance.
+- 2026-07-05 — Phase 4 (staking/engine/metrics/baselines + CLI): `backtest/staking.py` (flat +
+  fractional-Kelly, edge-shrink, per-bet cap), `backtest/engine.py` (settle at taken price, bankroll,
+  CLV vs Pinnacle closing), `backtest/metrics.py` (yield-with-bootstrap-CI, drawdown, CLV beat-rate,
+  CI-vs-0 verdict), `backtest/baselines.py`, `scripts/run_backtest.py`. 26 new tests, gate green (100
+  total). CORE MILESTONE — real value-betting backtest E0 2022/23–2023/24: 971 value bets (edge>5%),
+  flat yield −4.7% (CI [−13.0%,+4.1%] straddles 0), CLV mean −5.4%, CLV beat-rate 20.4% → NO edge;
+  the model's value bets have NEGATIVE CLV (it bets against the sharp close and loses) — the expected
+  honest finding, exactly what the harness exists to show. Baselines flat: home +1.0/fav +0.9/over
+  −0.7%. Ran `betting-methodology-reviewer` (D-requirement) before finalizing. Open (D1): trial log +
+  DSR/PBO on the knob search; open (D3): label-permutation/placebo test. Next: fold reviewer findings,
+  then Phase 5 ML challenger.

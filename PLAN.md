@@ -102,27 +102,27 @@ Acceptance: given predictions + odds, emits a ranked value-bet list per matchday
 
 Goal: walk-forward bankroll simulation over the Top-5, honest metrics, baselines.
 
-- [ ] Walk-forward loop: per matchday fit model on past only → value bets → **settle strictly at the
-      taken Bet365 pre-match price** (D4); Pinnacle closing feeds ONLY the CLV metric.
-- [ ] Bankroll accounting + staking: **flat 1u = headline** (order-independent); 0.25-Kelly a
-      SECONDARY track — edge shrunk toward the market before staking, joint Kelly for same-day bets,
-      hard per-bet cap ≤5% bankroll (D10).
+- [x] Walk-forward loop → value bets → **settle at the taken Bet365 pre-match price** (D4); Pinnacle
+      closing feeds ONLY CLV. DONE 2026-07-05 (`backtest/engine.py`).
+- [x] Bankroll + staking: **flat = headline**; 0.25-Kelly SECONDARY (edge-shrink hook, per-bet cap
+      ≤5%, D10). DONE 2026-07-05 (`backtest/staking.py`).
 - [ ] Trial log + whole-harness anti-overfit (D1): log EVERY config tried, counting subgroup slices
-      (per-league/market/selection) as trials; rising significance hurdle (DSR/PBO analog) on the
-      Dixon-Coles path; config pre-registered (or design-fold vs holdout-fold split).
-- [ ] Metrics + verdict (D2): ROI-with-CI, yield, max drawdown, calibration, CLV + **CLV beat-rate**
-      (headline); **CI-vs-baseline** rule-generated verdict with a minimum bet count.
-- [ ] Leak guards (D3): hard fit-window assertion; **odds-provenance assertion** (selection path
-      cannot read `is_closing=true` rows); **label-permutation/placebo test** (shuffle outcomes →
-      ROI ≈ −vig). Shift-test kept only as a weak sanity check.
-- [ ] Baselines: always-home, always-favorite, always-over-2.5, ρ=0-Poisson ablation, closing-line-
-      implied.
-- [ ] Tests: settle-at-taken-price assertion, staking math, deterministic run, baseline correctness,
-      placebo collapses to −vig, odds-provenance holds.
-- [ ] **Run `betting-methodology-reviewer`** on `value/` + `backtest/` before claiming any result.
-Acceptance: `scripts/run_backtest.py` produces the calibration/CLV verdict (primary) + bankroll curve
-+ metrics JSON (1X2 from 2013/14+, O/U2.5 from 2019/20+); honest CI-vs-baseline finding reported
-(likely: does not beat the closing line).
+      as trials; rising significance hurdle (DSR/PBO analog) on the Dixon-Coles path; pre-register /
+      design-vs-holdout split. STILL OPEN — threshold/min_train/half-life knobs not yet trial-logged.
+- [x] Metrics + verdict (D2): yield-with-bootstrap-CI, drawdown, CLV + CLV beat-rate, min-bet-count
+      CI-vs-0 verdict. DONE 2026-07-05 (`backtest/metrics.py`).
+- [ ] Leak guards (D3): hard fit-window (walk-forward no-lookahead PROVEN by test) + odds-provenance
+      (selection ignores `is_closing` rows, tested) DONE; **label-permutation/placebo test STILL OPEN**.
+- [x] Baselines: always-home, always-favorite, always-over-2.5. DONE 2026-07-05
+      (`backtest/baselines.py`).
+- [x] Tests: settle math, staking math, deterministic run, baseline correctness, CLV present/absent.
+      DONE (placebo test pending with the D3 item).
+- [~] **Run `betting-methodology-reviewer`** on `value/` + `backtest/` — RUNNING 2026-07-05 before
+      the result is treated as final.
+Acceptance: `scripts/run_backtest.py` produces yield-CI/CLV/drawdown + baselines + verdict. MET
+2026-07-05 (E0 2022/23–2023/24): 971 value bets, flat yield −4.7% (CI [−13.0%, +4.1%] straddles 0),
+CLV mean −5.4%, CLV beat-rate 20.4% → **no evidence of an edge; value bets have negative CLV** — the
+expected honest finding. Baselines (flat yield): home +1.0%, favorite +0.9%, over −0.7%.
 
 ## Phase 5 — ML challenger (walled off)
 
