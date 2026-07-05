@@ -28,8 +28,9 @@ checks the box, and appends one line to `AUTOPILOT_LOG.md`.
 
 Goal: canonical, source-agnostic match + odds tables from free sources, behind a seam with fakes.
 
-- [ ] Provider seam: abstract `MatchDataProvider` + `OddsProvider` interfaces; `FakeProvider` with
-      recorded fixtures for tests.
+- [x] Provider seam: `MatchProvider` + `OddsProvider` Protocols (`@runtime_checkable`); canonical
+      `matches`/`odds` schema (enums + `validate_*` enforcing the no-lookahead + odds invariants);
+      `FakeProvider` backing network-free tests. DONE 2026-07-05: 13 tests, gate green.
 - [ ] football-data.co.uk fetcher: per-season/per-league CSV download (httpx, retry/backoff),
       **per-era column mapping** (`Bb`-prefixed ≤2018/19 → flat `Max/Avg` 2019/20+, D8) → canonical
       `matches` + `odds` (1X2 + O/U2.5). Keep Bet365 (`B365`/`B365C`), Pinnacle (`PS`/`PSC`), Avg,

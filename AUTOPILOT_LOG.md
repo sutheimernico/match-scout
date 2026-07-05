@@ -21,3 +21,9 @@ One line per iteration. Newest last.
   independent-Poisson+τ / ξ-tuning / cold-start shrinkage / penaltyblog cross-check (D9), flat-stake
   headline + Kelly/accumulator demoted (D10), cite Winkelmann/Wilkens (D11). No code change; gate
   still green. Next: Phase 1 — provider seam + fakes.
+- 2026-07-05 — Phase 1 (1/n): canonical `matches`/`odds` schema (`data/schema.py`: Market/Selection/
+  MatchStatus enums + `validate_matches`/`validate_odds` enforcing no-lookahead `timestamp_known ≤
+  timestamp_event`, market/selection consistency, decimal odds > 1.0) + provider seam
+  (`data/provider.py`: `MatchProvider`/`OddsProvider` Protocols) + `data/fakes.py` FakeProvider.
+  13 new tests, gate green (14 total). Next: football-data.co.uk fetcher with per-era column mapping
+  (D8) on recorded CSV fixtures from both schema eras.
