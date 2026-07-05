@@ -1,0 +1,197 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1d212b;
+  --line: #2a2f3a;
+  --text: #e7e9ee;
+  --muted: #9aa3b2;
+  --accent: #58d5a4;
+  --warn: #f0b94a;
+  --down: #e5695f;
+  --up: #58d5a4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 28px 18px 64px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: -0.5px;
+}
+
+.tagline {
+  color: var(--muted);
+  margin: 4px 0 18px;
+}
+
+.disclaimer {
+  background: rgba(240, 185, 74, 0.1);
+  border: 1px solid rgba(240, 185, 74, 0.35);
+  color: var(--warn);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 22px;
+}
+
+h2 {
+  font-size: 18px;
+  margin: 26px 0 8px;
+}
+
+section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
+}
+
+.verdict {
+  font-weight: 600;
+  color: var(--accent);
+  margin: 4px 0 14px;
+}
+
+.caption {
+  color: var(--muted);
+  font-size: 12.5px;
+  margin-top: 12px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stat {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.stat .v {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.stat .l {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.chart .baseline {
+  stroke: var(--muted);
+  stroke-dasharray: 4 4;
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.chart .curve {
+  fill: none;
+  stroke-width: 2;
+}
+
+.chart .curve.up {
+  stroke: var(--up);
+}
+
+.chart .curve.down {
+  stroke: var(--down);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.card .fixture {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.card .fixture span {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.card .row {
+  font-size: 13px;
+  color: var(--text);
+  padding: 2px 0;
+}
+
+.card .row b {
+  color: var(--muted);
+  font-weight: 600;
+  display: inline-block;
+  min-width: 62px;
+}
+
+.card .row.highlight {
+  color: var(--accent);
+}
+
+.card .pick {
+  font-weight: 700;
+}
+
+.card .tops {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.combo {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+footer {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  margin-top: 20px;
+}
