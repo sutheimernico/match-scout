@@ -92,8 +92,9 @@ phase: SOTA self-challenge → ADR under `docs/adr/`.
 ## §Open inputs (living — external facts Nico owns → "Needs Nico")
 
 - [ ] Git remote + visibility (public repo under `sutheimernico/match-scout`?) before any first push.
-- [ ] football-data.org **free API key** (`X-Auth-Token`) as a repo secret — only needed for CL/WM
-      fixtures + as a fixtures fallback; core (Top-5) needs no key. Do NOT sign up for anything paid.
+- [x] football-data.org **free API key** — PROVIDED 2026-07-05 (stored in `.env`, gitignored;
+      live-verified against WC 2026 + CL 2024/25). Still needs adding as a GitHub Actions repo secret
+      `FOOTBALL_DATA_API_KEY` when the remote is set up.
 - [ ] Optional later: **The Odds API** key to enable real *forward* CL/WM P&L (free tier = live
       odds only; historical is paid). Not a blocker.
 - [ ] Merges to `main`: Nico reviews `autopilot/work` and merges.

@@ -43,8 +43,10 @@ Goal: canonical, source-agnostic match + odds tables from free sources, behind a
       pre-match columns precede kickoff; document `timestamp_known` imputation (kickoff − N h).
 - [ ] Canonical `data_quality` report (schema + validators DONE in iter 1): missing-odds rate,
       void/postponed flags, dedupe, promoted/relegated team continuity.
-- [ ] football-data.org fetcher (optional, key-gated): CL/WM fixtures/results → canonical `matches`
-      (no odds). Degrades gracefully to "no key → skip" without failing the pipeline.
+- [x] football-data.org fetcher (key-gated): CL/WC/EC fixtures/results → canonical `matches`
+      (no odds → shadow-mode). Degrades to "no key → clear error, skip". DONE 2026-07-05
+      (`data/football_data_org.py`, `config.py` .env loader; key in `.env`, gitignored). KEY PROVIDED
+      + LIVE-VERIFIED: WC 2026 (104 matches, tournament in progress) + CL 2024/25 (189) fetched clean.
 - [x] Tests: column-mapping on synthetic both-era frames (D8), cache read-through, closing-vs-
       pre-match labeling, `book` separation, retry, no-live-network guarantee. DONE 2026-07-05.
 Acceptance: `scripts/ingest.py` builds canonical Parquet for the Top-5 (1X2 from 2013/14+, O/U2.5
@@ -192,7 +194,7 @@ Acceptance: publish checklist (see `~/.claude/CLAUDE.md`) satisfied; Needs-Nico 
 ## Needs Nico (loop cannot do these itself)
 
 - Git remote / public-visibility decision before any first push.
-- football-data.org free API key (`X-Auth-Token`) as a repo secret (optional; core needs no key).
-  Do NOT sign up for anything paid.
+- ~~football-data.org free API key~~ — PROVIDED 2026-07-05 (in `.env`, gitignored, live-verified).
+  For GitHub Actions it must also be added as a repo secret `FOOTBALL_DATA_API_KEY`.
 - The Odds API key (optional, later) for real forward CL/WM P&L.
 - Merges to `main`.

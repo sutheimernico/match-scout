@@ -118,3 +118,13 @@ One line per iteration. Newest last.
   overfits the small free-data sample (log-loss worse than uniform) and loses to the statistical
   baseline — the honest negative result (signal-trader pattern). Phases 0–5 complete. Next: Phase 6
   forward paper loop, then CI/dashboard/publish.
+- 2026-07-05 — football-data.org integration (Nico provided the free API key): secret stored in
+  `.env` (gitignored, NEVER committed; `.env.example` + `config.py` .env loader added),
+  `data/football_data_org.py` (CL/WC/EC fixtures+results → canonical matches, no odds → shadow-mode,
+  X-Auth-Token, injectable client, retry on rate-limit). Fixed a tz-compare bug in
+  `schema.validate_matches` (UTC-normalize; org times are real UTC). 9 new tests (MockTransport, no
+  live key needed), gate green (126 total). LIVE-VERIFIED with the real key: WC 2026 = 104 matches
+  (90 played / 14 scheduled — tournament in progress), CL 2024/25 = 189 (PSG 5-0 Inter final present).
+  NOTE: producing CL/WC *predictions* needs a cross-competition pooled rating model (Phase 6); WC is
+  limited — national teams aren't in the club-league model's team set. Next: ingest CLI for org
+  competitions, then the cross-competition model + shadow-mode predictions.

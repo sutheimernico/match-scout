@@ -85,10 +85,12 @@ def validate_matches(df: pd.DataFrame) -> pd.DataFrame:
     if played.any() and df.loc[played, ["ft_home_goals", "ft_away_goals"]].isna().any().any():
         raise SchemaError("matches: played rows must have both goal columns set")
 
-    known = pd.to_datetime(df["timestamp_known"])
-    event = pd.to_datetime(df["timestamp_event"])
+    # Normalize to UTC so tz-naive (football-data.co.uk local) and tz-aware
+    # (football-data.org) timestamps compare cleanly; guard the empty case.
+    known = pd.to_datetime(df["timestamp_known"], utc=True, errors="coerce")
+    event = pd.to_datetime(df["timestamp_event"], utc=True, errors="coerce")
     both = known.notna() & event.notna()
-    if (known[both] > event[both]).any():
+    if both.any() and (known[both] > event[both]).any():
         raise SchemaError("matches: timestamp_known must be <= timestamp_event (no lookahead)")
     return df
 
