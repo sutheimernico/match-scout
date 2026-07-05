@@ -55,3 +55,9 @@ One line per iteration. Newest last.
   green (43 total). VERIFIED on real E0 2023/24: top attack Man City/Arsenal/Newcastle/Liverpool,
   best defence Arsenal, home_adv +0.20 — recovers the real season. Next: τ low-score correction +
   exponential time-decay (full Dixon-Coles), then calibration vs the closing line.
+- 2026-07-05 — Phase 2 (3/n): full Dixon-Coles — `fit_dixon_coles` adds the τ low-score correction
+  (fitted ρ, bounded ±0.2 to keep τ>0) + exponential time-decay (half-life + as-of weighting) atop
+  the base fit, sharing `_fit`; `_apply_tau` corrects + renormalizes the score matrix in `predict`.
+  `fit_poisson` stays the ρ=0/no-decay ablation. 3 new tests (ρ bounds, τ renorm/shift, time-decay
+  up-weights recent form). Gate green (46 total). Next: walk-forward calibration eval (reliability +
+  Brier + log-loss vs closing-line-implied), and tune ξ on held-out data (not hardcoded).

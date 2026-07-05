@@ -59,9 +59,10 @@ Add `scipy` (MLE) with justification.
       + `model/goal_model.py` (MLE fit of attack/defence + home_adv, ridge shrinkage). VERIFIED on
       real E0 2023/24: top attack Man City/Arsenal/Newcastle, best defence Arsenal, home_adv +0.20 —
       recovers reality. Elo-proper rating baseline optional/deferred (the Poisson ablation covers it).
-- [ ] Dixon-Coles: add **τ low-score correction** (4-cell) + exponential **time-decay** on top of
-      the base fit; single global home-advantage constant. **ξ tuned via held-out log-lik/Brier
-      (walk-forward), not hardcoded.** Base MLE fit DONE 2026-07-05 (`fit_poisson`); τ + decay next.
+- [x] Dixon-Coles: **τ low-score correction** (4-cell, fitted ρ bounded to keep τ>0) +
+      exponential **time-decay** (half-life, as-of) on the base fit; single global home-advantage.
+      DONE 2026-07-05 (`fit_dixon_coles`, `_apply_tau`, 3 tests). **ξ still to be tuned via held-out
+      log-lik/Brix in the calibration/walk-forward step (not hardcoded)** — next bullet.
 - [ ] Promoted-team cold-start: shrink new-team attack/defence toward the league mean, regularization
       weight decaying with match count (D9).
 - [x] Derive full scoreline distribution → 1X2 probs + P(Over/Under 2.5). DONE 2026-07-05

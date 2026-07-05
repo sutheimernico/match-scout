@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 
-from matchscout.model.goal_model import GoalModel, fit_poisson
+from matchscout.model.goal_model import GoalModel, _apply_tau, fit_dixon_coles, fit_poisson
+from matchscout.model.poisson import score_matrix
 
 # A strong (scores lots, concedes ~none) ... D weak. Home/away balanced, repeated for signal.
 _RESULTS = [
@@ -77,3 +78,40 @@ def test_no_played_matches_raises():
 
 def test_isinstance_goalmodel():
     assert isinstance(fit_poisson(_matches(_RESULTS)), GoalModel)
+
+
+def test_dixon_coles_rho_in_bounds():
+    m = fit_dixon_coles(_matches(_RESULTS))
+    assert -0.2 <= m.rho <= 0.2
+    assert sum(m.predict("A", "D")["1x2"].values()) == pytest.approx(1.0)
+
+
+def test_apply_tau_renormalizes_and_shifts_low_scores():
+    m = score_matrix(1.4, 1.2)
+    corrected = _apply_tau(m, 1.4, 1.2, -0.1)
+    assert corrected.sum() == pytest.approx(1.0)
+    assert corrected[0, 0] != pytest.approx(m[0, 0])
+
+
+def test_time_decay_upweights_recent_form():
+    rows = []
+    for _ in range(3):  # old: X weak
+        rows.append(("X", "Y", 0, 3, "2023-01-15"))
+        rows.append(("Y", "X", 3, 0, "2023-01-20"))
+    for _ in range(3):  # recent: X strong
+        rows.append(("X", "Y", 3, 0, "2023-12-15"))
+        rows.append(("Y", "X", 0, 3, "2023-12-20"))
+    df = pd.DataFrame(
+        {
+            "status": ["played"] * len(rows),
+            "home": [r[0] for r in rows],
+            "away": [r[1] for r in rows],
+            "ft_home_goals": [r[2] for r in rows],
+            "ft_away_goals": [r[3] for r in rows],
+            "date": pd.to_datetime([r[4] for r in rows]),
+        }
+    )
+    as_of = pd.Timestamp("2023-12-31")
+    recent = fit_dixon_coles(df, half_life_days=20, as_of=as_of)
+    flat = fit_dixon_coles(df, half_life_days=1e6, as_of=as_of)
+    assert recent.attack["X"] > flat.attack["X"]
