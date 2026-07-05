@@ -34,3 +34,11 @@ One line per iteration. Newest last.
   missing/malformed odds. Tested with synthetic both-era frames (real column names, fabricated data
   — raw CSVs not redistributable). 6 new tests, gate green (20 total). Next: httpx fetch + `.cache/`
   read-through, then D7 odds-timestamp check.
+- 2026-07-05 — Phase 1 (3/n): httpx fetcher + read-through `.cache/` cache (`fetch_raw` with
+  injectable client + retry/backoff), `FootballDataCoUk` provider, `scripts/ingest.py` typer CLI.
+  Tests via `httpx.MockTransport` (no live network in suite): fetch→cache, cache-read-no-network,
+  retry-then-success, retry-exhausted, unknown-competition. 5 new tests, gate green (25 total).
+  VERIFIED LIVE against real data: ingested Top-5 × {2324 flat, 1718 Bb} → 3578 matches / 78,023
+  odds rows, schema-valid, 0 lookahead, Pinnacle-closing in both eras (D8 confirmed on real data).
+  Match counts sanity-correct (D1=306/18-team, F1 2324=306 post-reduction, F1 1718=380). Phase 1
+  data ingestion is end-to-end runnable. Next: D7 odds-timestamp check, then Phase 2 goal model.

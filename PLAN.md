@@ -31,24 +31,24 @@ Goal: canonical, source-agnostic match + odds tables from free sources, behind a
 - [x] Provider seam: `MatchProvider` + `OddsProvider` Protocols (`@runtime_checkable`); canonical
       `matches`/`odds` schema (enums + `validate_*` enforcing the no-lookahead + odds invariants);
       `FakeProvider` backing network-free tests. DONE 2026-07-05: 13 tests, gate green.
-- [ ] football-data.co.uk fetcher: per-season/per-league CSV download (httpx, retry/backoff),
-      **per-era column mapping** (`Bb`-prefixed ≤2018/19 → flat `Max/Avg` 2019/20+, D8) → canonical
-      `matches` + `odds` (1X2 + O/U2.5). Keep Bet365 (`B365`/`B365C`), Pinnacle (`PS`/`PSC`), Avg,
-      Max as distinct `book` values; `is_closing` from `C` columns. Raw CSV → `.cache/` (gitignored).
-      PARTIAL 2026-07-05: `parse()` + per-era column mapping done (`football_data_co_uk.py`, both
-      eras, B365/PS/PSC/Avg extraction, 6 tests). Still open: httpx fetch + `.cache/` read-through.
+- [x] football-data.co.uk fetcher + per-era column mapping (D8). DONE 2026-07-05: `parse()` (both
+      eras, B365/PS/PSC/Avg extraction), `fetch_raw` (httpx, injectable client, retry/backoff),
+      `FootballDataCoUk` provider, read-through `.cache/` cache, `scripts/ingest.py` CLI. VERIFIED
+      LIVE: ingested Top-5 × {2324 flat, 1718 Bb} = 3578 matches / 78,023 odds rows, schema-valid,
+      0 lookahead violations, Pinnacle-closing present in both eras. 11 tests.
+- [ ] Read-through cache freshness (extends the above): skip complete past seasons, refresh current
+      season vs. injected run-date. Basic exists-or-fetch + `refresh` flag done; season-freshness
+      logic deferred to the forward loop (Phase 6).
 - [ ] Odds-timestamp data-quality check (D7): measure pre-`C` vs `C` odds gap/variance; confirm
       pre-match columns precede kickoff; document `timestamp_known` imputation (kickoff − N h).
-- [ ] Read-through cache: Parquet under `.cache/`, freshness vs. injected run-date; skip complete
-      past seasons, refresh current season.
-- [ ] Canonical schema + validation (`data_quality`): missing-odds rate, void/postponed flags,
-      dedupe, promoted/relegated team continuity.
+- [ ] Canonical `data_quality` report (schema + validators DONE in iter 1): missing-odds rate,
+      void/postponed flags, dedupe, promoted/relegated team continuity.
 - [ ] football-data.org fetcher (optional, key-gated): CL/WM fixtures/results → canonical `matches`
       (no odds). Degrades gracefully to "no key → skip" without failing the pipeline.
-- [ ] Tests: column-mapping on recorded CSV fixtures **from BOTH schema eras** (D8), cache
-      read-through, closing-vs-pre-match labeling, `book` separation, no-live-network guarantee.
+- [x] Tests: column-mapping on synthetic both-era frames (D8), cache read-through, closing-vs-
+      pre-match labeling, `book` separation, retry, no-live-network guarantee. DONE 2026-07-05.
 Acceptance: `scripts/ingest.py` builds canonical Parquet for the Top-5 (1X2 from 2013/14+, O/U2.5
-from 2019/20+) from cached fixtures; gate green.
+from 2019/20+) from cached fixtures; gate green. — MET (live-verified 2026-07-05).
 
 ## Phase 2 — Goal model (Dixon-Coles + Elo)
 

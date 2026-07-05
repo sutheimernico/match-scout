@@ -12,8 +12,13 @@ this stays offline-testable.
 
 from __future__ import annotations
 
+import io
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 
+import httpx
 import pandas as pd
 
 from matchscout.data import schema
@@ -169,3 +174,77 @@ def _build_odds(raw: pd.DataFrame, match_id: pd.Series, specs: list[_OddsSpec]) 
     if not blocks:
         return pd.DataFrame({c: pd.Series(dtype="object") for c in schema.ODDS_COLUMNS})
     return pd.concat(blocks, ignore_index=True)
+
+
+def _read_csv(content: bytes) -> pd.DataFrame:
+    # football-data.co.uk CSVs are latin-1 encoded and often carry trailing blank columns.
+    return pd.read_csv(io.BytesIO(content), encoding="latin-1")
+
+
+def _get_with_retry(
+    client: httpx.Client, url: str, retries: int, sleep: Callable[[float], None]
+) -> bytes:
+    last_exc: Exception | None = None
+    for attempt in range(retries):
+        try:
+            resp = client.get(url)
+            resp.raise_for_status()
+            return resp.content
+        except httpx.HTTPError as exc:
+            last_exc = exc
+            if attempt < retries - 1:
+                sleep(2.0**attempt)
+    raise RuntimeError(f"failed to fetch {url} after {retries} attempts") from last_exc
+
+
+def fetch_raw(
+    season: str,
+    div: str,
+    cache_dir: Path,
+    *,
+    client: httpx.Client | None = None,
+    refresh: bool = False,
+    retries: int = 3,
+    sleep: Callable[[float], None] = time.sleep,
+) -> pd.DataFrame:
+    """Return the raw season CSV as a DataFrame, read-through cached under `cache_dir`.
+
+    Raw CSVs are cached (and gitignored) under `.cache/football_data_co_uk/`; they are
+    NOT redistributable, so they never leave the cache. `client` is injectable so tests
+    use an `httpx.MockTransport` and never hit the network.
+    """
+    path = Path(cache_dir) / "football_data_co_uk" / season / f"{div}.csv"
+    if path.exists() and not refresh:
+        return _read_csv(path.read_bytes())
+
+    owns_client = client is None
+    client = client or httpx.Client(timeout=30.0, follow_redirects=True)
+    try:
+        content = _get_with_retry(client, season_url(season, div), retries, sleep)
+    finally:
+        if owns_client:
+            client.close()
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(content)
+    return _read_csv(content)
+
+
+class FootballDataCoUk:
+    """MatchProvider + OddsProvider backed by cached football-data.co.uk season CSVs."""
+
+    def __init__(self, cache_dir: Path, *, client: httpx.Client | None = None) -> None:
+        self.cache_dir = Path(cache_dir)
+        self._client = client
+
+    def _load(self, competition: str, season: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+        if competition not in DIVISIONS:
+            raise KeyError(f"unknown competition {competition!r}; known: {sorted(DIVISIONS)}")
+        raw = fetch_raw(season, DIVISIONS[competition], self.cache_dir, client=self._client)
+        return parse(raw, competition, season)
+
+    def fetch_matches(self, competition: str, season: str) -> pd.DataFrame:
+        return self._load(competition, season)[0]
+
+    def fetch_odds(self, competition: str, season: str) -> pd.DataFrame:
+        return self._load(competition, season)[1]

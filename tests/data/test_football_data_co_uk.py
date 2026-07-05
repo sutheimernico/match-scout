@@ -1,6 +1,27 @@
+import httpx
 import pandas as pd
+import pytest
 
 from matchscout.data import football_data_co_uk as fd
+
+_FLAT_CSV = (
+    "Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG,FTR,B365H,B365D,B365A,PSH,PSD,PSA,"
+    "AvgH,AvgD,AvgA,PSCH,PSCD,PSCA\n"
+    "E0,12/08/2023,15:00,Alpha,Bravo,2,1,H,1.80,3.60,4.50,1.82,3.70,4.60,1.78,3.55,4.40,"
+    "1.77,3.80,4.90\n"
+)
+
+
+def _mock_client(body: bytes, fail_times: int = 0):
+    calls = {"n": 0}
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] <= fail_times:
+            return httpx.Response(503)
+        return httpx.Response(200, content=body)
+
+    return httpx.Client(transport=httpx.MockTransport(handler)), calls
 
 
 def _flat_raw() -> pd.DataFrame:
@@ -118,3 +139,40 @@ def test_match_id_shared_between_matches_and_odds():
 
 def test_season_url():
     assert fd.season_url("2324", "E0") == "https://www.football-data.co.uk/mmz4281/2324/E0.csv"
+
+
+def test_fetch_writes_cache_and_parses(tmp_path):
+    client, _calls = _mock_client(_FLAT_CSV.encode())
+    prov = fd.FootballDataCoUk(tmp_path, client=client)
+    matches = prov.fetch_matches("E0", "2324")
+    assert len(matches) == 1
+    assert (tmp_path / "football_data_co_uk" / "2324" / "E0.csv").exists()
+
+
+def test_cache_read_needs_no_network(tmp_path):
+    path = tmp_path / "football_data_co_uk" / "2324" / "E0.csv"
+    path.parent.mkdir(parents=True)
+    path.write_text(_FLAT_CSV)
+    prov = fd.FootballDataCoUk(tmp_path)  # no client → would fail if it hit the network
+    odds = prov.fetch_odds("E0", "2324")
+    assert not odds.empty
+    assert set(odds["book"]) == {"B365", "PS", "Avg"}
+
+
+def test_retry_then_success(tmp_path):
+    client, calls = _mock_client(_FLAT_CSV.encode(), fail_times=2)
+    df = fd.fetch_raw("2324", "E0", tmp_path, client=client, sleep=lambda _: None)
+    assert calls["n"] == 3
+    assert len(df) == 1
+
+
+def test_retry_exhausted_raises(tmp_path):
+    client, _calls = _mock_client(_FLAT_CSV.encode(), fail_times=99)
+    with pytest.raises(RuntimeError, match="failed to fetch"):
+        fd.fetch_raw("2324", "E0", tmp_path, client=client, retries=2, sleep=lambda _: None)
+
+
+def test_unknown_competition_raises(tmp_path):
+    prov = fd.FootballDataCoUk(tmp_path)
+    with pytest.raises(KeyError, match="unknown competition"):
+        prov.fetch_matches("XX", "2324")
