@@ -61,3 +61,8 @@ One line per iteration. Newest last.
   `fit_poisson` stays the ρ=0/no-decay ablation. 3 new tests (ρ bounds, τ renorm/shift, time-decay
   up-weights recent form). Gate green (46 total). Next: walk-forward calibration eval (reliability +
   Brier + log-loss vs closing-line-implied), and tune ξ on held-out data (not hardcoded).
+- 2026-07-05 — Phase 2 (4/n): `evaluation/metrics.py` — `brier_score` + `log_loss` (multiclass,
+  strictly-proper) + `reliability_curve` (binary calibration bins). The honesty-critical scoring
+  building block for model calibration, backtest, and ML. 7 new tests, gate green (53 total). Next:
+  Shin/proportional de-vig (D6) to build the closing-line benchmark, then the walk-forward
+  calibration eval (Dixon-Coles vs the market) + ξ tuning.
