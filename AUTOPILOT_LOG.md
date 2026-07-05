@@ -27,3 +27,10 @@ One line per iteration. Newest last.
   (`data/provider.py`: `MatchProvider`/`OddsProvider` Protocols) + `data/fakes.py` FakeProvider.
   13 new tests, gate green (14 total). Next: football-data.co.uk fetcher with per-era column mapping
   (D8) on recorded CSV fixtures from both schema eras.
+- 2026-07-05 — Phase 1 (2/n): `data/football_data_co_uk.py` — pure `parse()` mapping raw season CSVs
+  → canonical matches+odds, handling BOTH schema eras (D8: `Bb`-aggregates ≤2018/19 vs flat
+  `Avg`+full closing suite 2019/20+), extracting B365 (price taken), PS/PSC (CLV ref), Avg (bound)
+  per D5; deterministic per-file date-format parse (fixed a dateutil warning in self-review); drops
+  missing/malformed odds. Tested with synthetic both-era frames (real column names, fabricated data
+  — raw CSVs not redistributable). 6 new tests, gate green (20 total). Next: httpx fetch + `.cache/`
+  read-through, then D7 odds-timestamp check.

@@ -35,6 +35,8 @@ Goal: canonical, source-agnostic match + odds tables from free sources, behind a
       **per-era column mapping** (`Bb`-prefixed ≤2018/19 → flat `Max/Avg` 2019/20+, D8) → canonical
       `matches` + `odds` (1X2 + O/U2.5). Keep Bet365 (`B365`/`B365C`), Pinnacle (`PS`/`PSC`), Avg,
       Max as distinct `book` values; `is_closing` from `C` columns. Raw CSV → `.cache/` (gitignored).
+      PARTIAL 2026-07-05: `parse()` + per-era column mapping done (`football_data_co_uk.py`, both
+      eras, B365/PS/PSC/Avg extraction, 6 tests). Still open: httpx fetch + `.cache/` read-through.
 - [ ] Odds-timestamp data-quality check (D7): measure pre-`C` vs `C` odds gap/variance; confirm
       pre-match columns precede kickoff; document `timestamp_known` imputation (kickoff − N h).
 - [ ] Read-through cache: Parquet under `.cache/`, freshness vs. injected run-date; skip complete
