@@ -24,11 +24,20 @@ export interface Combo {
   n_legs: number;
 }
 
-export interface TipsData {
-  competition: string;
-  n_trained_on?: number;
+export interface CompetitionTips {
+  code: string;
+  name: string;
+  kind: "cup" | "league";
+  n_scheduled: number;
+  n_trained_on: number;
   tips: Tip[];
   combo?: Combo;
+}
+
+export interface UpcomingData {
+  generated_at?: string;
+  season?: string;
+  competitions: CompetitionTips[];
   error?: string;
 }
 

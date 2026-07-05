@@ -80,6 +80,55 @@ body {
 .paper-chip::first-letter {
   color: var(--up);
 }
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.live-note {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* ---------- competition tabs (live board) ---------- */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.tab {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.tab:hover {
+  border-color: var(--baseline);
+}
+.tab.on {
+  color: #fff;
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.tab-n {
+  font-size: 0.72rem;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  padding: 0 6px;
+}
+.tab.on .tab-n {
+  background: rgba(255, 255, 255, 0.22);
+}
 
 /* ---------- sections ---------- */
 section {

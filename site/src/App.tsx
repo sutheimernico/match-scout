@@ -3,30 +3,32 @@ import Disclaimer from "./components/Disclaimer";
 import HowItWorks from "./components/HowItWorks";
 import Insight from "./components/Insight";
 import LeagueBreakdown from "./components/LeagueBreakdown";
-import TipsBoard from "./components/TipsBoard";
+import LiveTips from "./components/LiveTips";
 import TrackRecord from "./components/TrackRecord";
 import Verdict from "./components/Verdict";
-import type { BacktestData, Meta, TipsData } from "./types";
+import type { BacktestData, Meta, UpcomingData } from "./types";
 
 // Vite serves public/ at BASE_URL; fetch the static JSON relative to it so it works both locally
 // (root) and under the GitHub Pages sub-path.
 const base = import.meta.env.BASE_URL;
 
 export default function App() {
-  const [tips, setTips] = useState<TipsData | null>(null);
+  const [upcoming, setUpcoming] = useState<UpcomingData | null>(null);
   const [backtest, setBacktest] = useState<BacktestData | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
 
   useEffect(() => {
-    fetch(`${base}data/tips.json`).then((r) => r.json()).then(setTips).catch(() => {});
+    fetch(`${base}data/upcoming.json`).then((r) => r.json()).then(setUpcoming).catch(() => {});
     fetch(`${base}data/backtest.json`).then((r) => r.json()).then(setBacktest).catch(() => {});
     fetch(`${base}data/meta.json`).then((r) => r.json()).then(setMeta).catch(() => {});
   }, []);
 
+  const liveCount = upcoming?.competitions?.length ?? 0;
+
   return (
     <div className="page">
       <header className="masthead">
-        <p className="kicker">match-scout · an honest football betting lab</p>
+        <p className="kicker">match-scout · a systematic football betting lab, measured honestly</p>
         <h1>
           A bot placed{" "}
           {backtest ? backtest.schemes.flat.summary.n_bets.toLocaleString() : "thousands of"} paper
@@ -35,19 +37,29 @@ export default function App() {
           Did it beat the bookmakers?
         </h1>
         <p className="dek">
-          A systematic model predicts every match in the Top-5 leagues, finds where it disagrees with
-          the price, and places paper bets — then we measure, honestly, whether it comes out ahead.
-          Spoiler in the number below.
+          A systematic model predicts every match, finds where it disagrees with the price, and
+          places paper bets — then we measure, honestly, whether it comes out ahead. The number below
+          is the answer; the live board shows whatever it would bet today.
         </p>
-        <span className="paper-chip">● paper-only · no real money</span>
+        <div className="status">
+          <span className="paper-chip">● paper-only · no real money</span>
+          {upcoming && (
+            <span className="live-note">
+              {liveCount > 0
+                ? `live: ${liveCount} competition${liveCount > 1 ? "s" : ""} with fixtures`
+                : "live: nothing scheduled right now"}
+              {meta && ` · updated ${new Date(meta.generated_at).toLocaleDateString()}`}
+            </span>
+          )}
+        </div>
       </header>
 
       {backtest && <Verdict data={backtest} />}
       {backtest && <TrackRecord data={backtest} />}
       {backtest && <LeagueBreakdown data={backtest} />}
       {backtest && <Insight data={backtest} />}
+      {upcoming && <LiveTips data={upcoming} />}
       <HowItWorks />
-      {tips && <TipsBoard data={tips} />}
       {meta && <Disclaimer text={meta.disclaimer} />}
       {meta && (
         <footer>

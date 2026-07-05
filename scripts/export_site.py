@@ -30,27 +30,58 @@ OUT = Path("site/public/data")
 
 DISCLAIMER = (
     "Educational simulation, paper stakes only — not gambling advice. "
-    "World Cup tips are shadow-mode (no odds, no stake) and overconfident on thin data. "
-    "The league backtest is the honest measurement: the model does not beat the closing line."
+    "Live tips are shadow-mode (no odds, no stake) and can be overconfident on thin data. "
+    "The backtest is the honest measurement: the model does not beat the closing line."
 )
 
 
-def _wm_tips() -> dict:
+# Competitions to check for live fixtures, in display order. Whatever has scheduled fixtures
+# right now shows up — World Cup today, the leagues once their season kicks off. No hardcoding.
+LIVE_COMPS = [
+    ("WC", "World Cup", "cup"),
+    ("CL", "Champions League", "cup"),
+    ("EC", "European Championship", "cup"),
+    ("PL", "Premier League", "league"),
+    ("BL1", "Bundesliga", "league"),
+    ("SA", "Serie A", "league"),
+    ("PD", "La Liga", "league"),
+    ("FL1", "Ligue 1", "league"),
+]
+
+
+def _upcoming(season: str = "2026") -> dict:
     provider = FootballDataOrg(CACHE)
-    matches = provider.fetch_matches("WC", "2026")
-    played = matches[matches["status"] == "played"]
-    scheduled = matches[matches["status"] == "scheduled"]
-    tips = fixture_tips(played, scheduled, as_of=pd.Timestamp.now(tz="UTC"))
-    combo = suggest_combo(tips, n_legs=3)
-    tips = tips.copy()
-    if not tips.empty:
+    now = pd.Timestamp.now(tz="UTC")
+    groups = []
+    for code, name, kind in LIVE_COMPS:
+        try:
+            matches = provider.fetch_matches(code, season, refresh=True)
+        except Exception:
+            continue  # off-season / season not yet available -> skip
+        played = matches[matches["status"] == "played"]
+        scheduled = matches[matches["status"] == "scheduled"]
+        if played.empty or scheduled.empty:
+            continue
+        try:
+            tips = fixture_tips(played, scheduled, as_of=now)
+        except Exception:
+            continue  # too few played matches to fit yet (early season)
+        if tips.empty:
+            continue
+        tips = tips.copy()
         tips["date"] = tips["date"].astype(str)
-    return {
-        "competition": "FIFA World Cup 2026",
-        "n_trained_on": int(len(played)),
-        "tips": tips.to_dict(orient="records"),
-        "combo": combo,
-    }
+        groups.append(
+            {
+                "code": code,
+                "name": name,
+                "kind": kind,
+                "n_scheduled": int(len(scheduled)),
+                "n_trained_on": int(len(played)),
+                "tips": tips.to_dict(orient="records"),
+                "combo": suggest_combo(tips, n_legs=3),
+            }
+        )
+    return {"generated_at": now.isoformat(), "season": season, "competitions": groups}
 
 
 TOP5 = ["E0", "SP1", "D1", "I1", "F1"]
@@ -124,11 +155,11 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
 
     try:
-        tips = _wm_tips()
-    except Exception as exc:  # no key / off-tournament — write an empty-but-valid file
-        tips = {"competition": "FIFA World Cup 2026", "tips": [], "error": str(exc)[:120]}
-    (OUT / "tips.json").write_text(json.dumps(tips, indent=2))
-    print(f"tips.json: {len(tips.get('tips', []))} tips")
+        upcoming = _upcoming()
+    except Exception as exc:  # no key etc. — write an empty-but-valid file
+        upcoming = {"competitions": [], "error": str(exc)[:120]}
+    (OUT / "upcoming.json").write_text(json.dumps(upcoming, indent=2))
+    print(f"upcoming.json: {len(upcoming.get('competitions', []))} competitions with fixtures")
 
     backtest = _backtest()
     (OUT / "backtest.json").write_text(json.dumps(backtest, indent=2))

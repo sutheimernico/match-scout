@@ -26,11 +26,17 @@ from matchscout.data.schema import MatchStatus, validate_matches
 
 BASE_URL = "https://api.football-data.org/v4"
 
-# canonical competition -> football-data.org competition code (all on the free tier)
+# canonical competition -> football-data.org competition code (all on the free tier).
+# Leagues are here too so live tips are competition-agnostic: whatever is in season shows up.
 COMPETITIONS: dict[str, str] = {
     "CL": "CL",  # UEFA Champions League
     "WC": "WC",  # FIFA World Cup
     "EC": "EC",  # UEFA European Championship
+    "PL": "PL",  # Premier League
+    "BL1": "BL1",  # Bundesliga
+    "SA": "SA",  # Serie A
+    "PD": "PD",  # La Liga (Primera Division)
+    "FL1": "FL1",  # Ligue 1
 }
 
 
