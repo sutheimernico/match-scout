@@ -110,3 +110,11 @@ One line per iteration. Newest last.
   (real_exceeds_null_95pct=False), Kelly CI now differs from flat. 1 net new test, gate green (103).
   Open: D1 trial-log/ξ-tune; low-sev: joint same-day Kelly, devig-fallback logging. Next: Phase 5 ML
   challenger (walled-off LightGBM; must beat DC AND the closing line).
+- 2026-07-05 — Phase 5 (ML challenger): `ml/validation.py` (purged+embargoed WF splits),
+  `ml/dataset.py` (1X2 features = DC walk-forward probs + Shin market probs), `ml/evaluate.py` +
+  `scripts/run_ml.py` (LightGBM native Booster API — no scikit-learn dep — OOS scorecard vs DC vs
+  market). 14 new tests, gate green (117 total). REAL FINDING E0 2022/23–2023/24 (563 OOS): ML Brier
+  0.774 / log-loss 1.674 vs DC 0.563 / 0.952 vs market 0.539 / 0.917 → ML beats NEITHER; naive GBDT
+  overfits the small free-data sample (log-loss worse than uniform) and loses to the statistical
+  baseline — the honest negative result (signal-trader pattern). Phases 0–5 complete. Next: Phase 6
+  forward paper loop, then CI/dashboard/publish.

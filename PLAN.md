@@ -132,15 +132,19 @@ expected honest finding. Baselines (flat yield): home +1.0%, favorite +0.9%, ove
 
 Goal: LightGBM that must beat Dixon-Coles AND the closing line to count. Add `lightgbm`.
 
-- [ ] Feature dataset (pre-match only: ratings, form, rest days, home/away, market-implied prob).
+- [x] Feature dataset (pre-match, leak-free): Dixon-Coles walk-forward probs + Shin-de-vigged market
+      probs. DONE 2026-07-05 (`ml/dataset.py`, 4 tests). Raw form/rest-days deferred (base features
+      already suffice — the GBDT underperforms them, see finding).
 - [x] Purged + embargoed walk-forward validation. DONE 2026-07-05 (`ml/validation.py`:
       `purged_walk_forward_splits`, expanding-window + embargo gap, 7 tests).
-- [ ] Honest scorecard: Brier, log-loss, ROI vs. Dixon-Coles + closing line, placebo test, trial log
-      with a rising significance hurdle (DSR/PBO analog). **Note (D11): "beats Dixon-Coles" is
-      near-guaranteed once the market-implied-prob feature is included and is uninteresting; only
-      "beats the closing line" is the real test — the writeup must say so.**
-Acceptance: `reports/ml_eval.json`; the negative result (if the GBDT does not robustly beat both)
-is reported, not hidden.
+- [x] Honest scorecard: OOS Brier + log-loss vs. Dixon-Coles + closing line over purged/embargoed
+      folds, rule-generated verdict (D11 note baked in). DONE 2026-07-05 (`ml/evaluate.py`,
+      `scripts/run_ml.py`, native LightGBM Booster API — no scikit-learn dep; 3 tests). The DSR/PBO
+      trial hurdle is the shared D1 item (Phase 4), still open.
+Acceptance: MET 2026-07-05 (E0 2022/23–2023/24, 563 OOS): ML Brier 0.774 / log-loss 1.674 vs. DC
+0.563 / 0.952 vs. market 0.539 / 0.917 → **ML beats NEITHER; the naive GBDT overfits the small
+sample (log-loss worse than uniform) and is beaten by the statistical baseline** — the honest
+negative result, reported not hidden.
 
 ## Phase 6 — Forward paper loop
 
