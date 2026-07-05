@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+dist/
+*.egg-info/
+
+# Node (dashboard, added later)
+node_modules/
+site/dist/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Raw fetched source data — NOT redistributable (football-data.co.uk is
+# "for league match prediction only"; no redistribution grant). Regenerate
+# via scripts/. Derived artifacts under data/ (my own computed ledger/
+# snapshots) ARE committed by the pipeline for the live dashboard.
+.cache/
+*.sqlite
+*.sqlite3
+*.db
+
+# Local scratch reports (dashboard-facing subset lives under data/ or site/)
+/reports/
+
+# Claude local settings
+.claude/settings.local.json
+
+# OS
+.DS_Store
