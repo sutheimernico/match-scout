@@ -42,3 +42,9 @@ One line per iteration. Newest last.
   odds rows, schema-valid, 0 lookahead, Pinnacle-closing in both eras (D8 confirmed on real data).
   Match counts sanity-correct (D1=306/18-team, F1 2324=306 post-reduction, F1 1718=380). Phase 1
   data ingestion is end-to-end runnable. Next: D7 odds-timestamp check, then Phase 2 goal model.
+- 2026-07-05 — Phase 2 (1/n): base independent-Poisson goal model (`model/poisson.py`:
+  `score_matrix` builds the renormalized score-probability matrix; `market_probs` reads off
+  1X2 + O/U2.5). This is the ρ=0/no-time-decay ablation core (D9); Dixon-Coles will add τ +
+  time-decay on top. numpy-only (no scipy yet — added when MLE fitting lands). 10 new tests
+  incl. analytic known-value checks, gate green (35 total). Next: fit team attack/defence + home
+  advantage (scipy MLE) on pre-matchday data, then the τ correction + time-decay (full DC).
