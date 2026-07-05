@@ -157,3 +157,14 @@ One line per iteration. Newest last.
   index + data JSON + JS bundle (all 200). No FastAPI (YAGNI — static export). node_modules + dist
   gitignored. STILL OPEN: portfolio tile needs the LIVE URL → blocked on Nico's remote + Pages
   deploy; local view via `npm --prefix site run dev`.
+- 2026-07-05 — Dashboard rebuild + Top-5 expansion (Nico: "unübersichtlich / only WM / 08-15 KI-
+  design / where's the rest"). Rebuilt `site/` as an editorial user-story (masthead question → hero
+  verdict number → running-profit chart → per-league breakdown → CLV insight → how-it-works → WM
+  tips), validated palette (dataviz skill), system-sans, real type hierarchy. Fixed a negative-
+  "bankroll" optics bug → charts now show cumulative PROFIT from break-even (flat is not bankroll-
+  constrained). Expanded backtest from E0-only to ALL Top-5 leagues: aggregate 4540 bets, flat yield
+  −8.78% (CI [−12.8,−4.8] now EXCLUDES 0 → statistically significant loss), CLV beat-rate 22.4%;
+  per-league all negative (PL −4.7 / La Liga −15.2 / Bundesliga −19.5 / Serie A −4.5 / Ligue1 −2.7).
+  `npm build` green; dev server serves it. LIMITATION: leagues are off-season so live tips = WM only;
+  can't visually verify the render here (Nico's eye). Still open: Pages deploy + portfolio tile (needs
+  remote), conservative-shrinkage option for thin WM tips.
