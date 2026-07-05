@@ -133,7 +133,8 @@ expected honest finding. Baselines (flat yield): home +1.0%, favorite +0.9%, ove
 Goal: LightGBM that must beat Dixon-Coles AND the closing line to count. Add `lightgbm`.
 
 - [ ] Feature dataset (pre-match only: ratings, form, rest days, home/away, market-implied prob).
-- [ ] Purged + embargoed walk-forward validation.
+- [x] Purged + embargoed walk-forward validation. DONE 2026-07-05 (`ml/validation.py`:
+      `purged_walk_forward_splits`, expanding-window + embargo gap, 7 tests).
 - [ ] Honest scorecard: Brier, log-loss, ROI vs. Dixon-Coles + closing line, placebo test, trial log
       with a rising significance hurdle (DSR/PBO analog). **Note (D11): "beats Dixon-Coles" is
       near-guaranteed once the market-implied-prob feature is included and is uninteresting; only
