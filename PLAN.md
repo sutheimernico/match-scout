@@ -158,7 +158,13 @@ Goal: stateful, idempotent loop that accumulates real-time P&L.
 - [ ] Forward loop: pull upcoming fixtures + pre-match odds → log bets at `timestamp_known` → settle
       after results → snapshot bankroll. Idempotent (re-run on same date = no-op).
 - [ ] Persistent bet ledger + `bankroll_snapshots` as committable derived artifacts under `data/`.
-- [ ] CL/WM shadow-mode: log model probabilities, no stake.
+- [x] CL/WM shadow-mode tips: DONE 2026-07-05 (`tips.py` `fixture_tips` + `scripts/tips.py`; fit
+      Dixon-Coles on played org history, predict scheduled fixtures — probs + pick + most-likely
+      score, no stake). LIVE: WC 2026 tips produced for the remaining knockout matches (7 with known
+      teams; semis/final skipped — TBD participants). CAVEAT: thin international data (~4-5 games/team)
+      → overconfident (e.g. Brazil 98%); directional only, not calibrated like the league backtest.
+      National-team ratings come from int'l matches (not the club model); no cross-source name issue
+      (org names are self-consistent).
 - [ ] Tests: idempotency, settle-on-result, dedupe by `bet_id`.
 Acceptance: `scripts/run_forward.py` advances one matchday, is safe to re-run, writes the ledger.
 

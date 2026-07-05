@@ -37,6 +37,12 @@ def score_matrix(lambda_home: float, mu_away: float, max_goals: int = MAX_GOALS)
     return matrix / matrix.sum()
 
 
+def most_likely_score(matrix: np.ndarray) -> tuple[int, int]:
+    """The (home_goals, away_goals) cell with the highest probability."""
+    i, j = np.unravel_index(int(np.argmax(matrix)), matrix.shape)
+    return int(i), int(j)
+
+
 def market_probs(matrix: np.ndarray) -> dict[str, dict[str, float]]:
     """Read 1X2 and Over/Under-2.5 probabilities off a score matrix."""
     home_win = float(np.tril(matrix, -1).sum())  # i > j (home scores more)

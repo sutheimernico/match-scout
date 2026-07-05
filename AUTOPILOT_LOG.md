@@ -128,3 +128,14 @@ One line per iteration. Newest last.
   NOTE: producing CL/WC *predictions* needs a cross-competition pooled rating model (Phase 6); WC is
   limited — national teams aren't in the club-league model's team set. Next: ingest CLI for org
   competitions, then the cross-competition model + shadow-mode predictions.
+- 2026-07-05 — Shadow-mode tips (Nico: "CL + WM tips, esp. WM"): `tips.py` (`fixture_tips`:
+  fit Dixon-Coles on played org history, predict scheduled fixtures → 1X2 + O/U probs + pick +
+  most-likely score) + `most_likely_score` + `scripts/tips.py` CLI. 5 new tests, gate green (130).
+  Key insight: fit WM on international matches, CL on org club data — org names are self-consistent,
+  so NO cross-source (co.uk↔org) team-name reconciliation needed. LIVE WM 2026: 7 tips for the
+  remaining known-team matches (Brazil-Norway, Mexico-England, Portugal-Spain, USA-Belgium,
+  Argentina-Egypt, Switzerland-Colombia, France-Morocco); semis/final skipped (TBD teams). CAVEAT:
+  thin int'l data → overconfident probabilities (Brazil 98%); directional shadow tips, honestly
+  labelled, NOT calibrated like the league backtest. CL: machinery works but off-season (no upcoming
+  fixtures until the 2026/27 draw). Next: (offer) stronger shrinkage for thin-data tips; GitHub
+  Actions live loop needs Nico's remote + secret.
