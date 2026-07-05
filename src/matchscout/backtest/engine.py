@@ -39,7 +39,7 @@ def _match_outcomes(matches: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def _closing_probs(
+def closing_probs(
     odds: pd.DataFrame, method: Callable[[np.ndarray], np.ndarray]
 ) -> dict[tuple[str, str, str], float]:
     closing = odds[(odds["book"] == "PS") & (odds["is_closing"].astype(bool))]
@@ -75,7 +75,7 @@ def settle_bets(
         return pd.DataFrame({c: pd.Series(dtype="object") for c in LEDGER_COLUMNS})
 
     df = picks.merge(_match_outcomes(matches), on="match_id", how="inner").sort_values("date")
-    closing = _closing_probs(odds, method)
+    closing = closing_probs(odds, method)
 
     bankroll = start_bankroll
     rows = []

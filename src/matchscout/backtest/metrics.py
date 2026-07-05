@@ -12,8 +12,23 @@ import numpy as np
 import pandas as pd
 
 
-def _returns(ledger: pd.DataFrame) -> np.ndarray:
-    return (ledger["pnl"] / ledger["stake"]).to_numpy(dtype=float)
+def bootstrap_yield_ci(
+    pnl, stake, *, n: int = 2000, seed: int = 0, alpha: float = 0.05
+) -> tuple[float, float]:
+    """Bootstrap CI for the STAKE-WEIGHTED yield (sum(pnl)/sum(stake)).
+
+    Resamples whole bets, so a stake-concentrated Kelly book gets a correspondingly wider CI
+    than flat staking — unlike a mean of per-bet returns, which is stake-invariant (review fix).
+    """
+    pnl = np.asarray(pnl, dtype=float)
+    stake = np.asarray(stake, dtype=float)
+    if len(pnl) == 0:
+        return (float("nan"), float("nan"))
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, len(pnl), size=(n, len(pnl)))
+    ys = pnl[idx].sum(axis=1) / stake[idx].sum(axis=1)
+    lo, hi = np.quantile(ys, [alpha / 2, 1 - alpha / 2])
+    return float(lo), float(hi)
 
 
 def max_drawdown(bankroll) -> float:
@@ -41,12 +56,13 @@ def summary(ledger: pd.DataFrame) -> dict:
     if ledger.empty:
         return {"n_bets": 0, "yield": float("nan"), "yield_ci": [float("nan"), float("nan")]}
 
-    returns = _returns(ledger)
     staked = float(ledger["stake"].sum())
     profit = float(ledger["pnl"].sum())
     clv = ledger["clv"].to_numpy(dtype=float)
     clv_finite = clv[np.isfinite(clv)]
-    lo, hi = bootstrap_ci(returns)
+    lo, hi = bootstrap_yield_ci(
+        ledger["pnl"].to_numpy(dtype=float), ledger["stake"].to_numpy(dtype=float)
+    )
     return {
         "n_bets": int(len(ledger)),
         "total_staked": staked,

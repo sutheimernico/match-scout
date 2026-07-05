@@ -118,8 +118,11 @@ Goal: walk-forward bankroll simulation over the Top-5, honest metrics, baselines
       (`backtest/baselines.py`).
 - [x] Tests: settle math, staking math, deterministic run, baseline correctness, CLV present/absent.
       DONE (placebo test pending with the D3 item).
-- [~] **Run `betting-methodology-reviewer`** on `value/` + `backtest/` — RUNNING 2026-07-05 before
-      the result is treated as final.
+- [x] **Ran `betting-methodology-reviewer`** (D-requirement). Verdict: headline "no edge/negative
+      CLV" credible (walk-forward/vig/settlement/CLV verified clean); found 🔴 broken placebo null +
+      🟡 stake-invariant Kelly CI — BOTH FIXED (ADR 0002). Corrected market-null centers at CLV
+      (−5.45% ≈ −5.36%), real −4.7% sits inside → no edge, no leak confirmed. D1 (trial log/ξ-tune)
+      still open; report as "no edge under this untuned config".
 Acceptance: `scripts/run_backtest.py` produces yield-CI/CLV/drawdown + baselines + verdict. MET
 2026-07-05 (E0 2022/23–2023/24): 971 value bets, flat yield −4.7% (CI [−13.0%, +4.1%] straddles 0),
 CLV mean −5.4%, CLV beat-rate 20.4% → **no evidence of an edge; value bets have negative CLV** — the

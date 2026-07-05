@@ -101,3 +101,12 @@ One line per iteration. Newest last.
   random outcomes (anti-selection at the margin, consistent with −5.4% CLV). NOTE: the large real-vs-
   placebo gap warrants interpretation (genuine anti-selection vs placebo base-rate artifact) — flagged
   for the running methodology reviewer. D1 (trial log/DSR) still open.
+- 2026-07-05 — Phase 4 (review fixes, ADR 0002): `betting-methodology-reviewer` verified the headline
+  clean (walk-forward leak-freedom, vig/selection, settlement-at-taken-price, CLV path) but found 🔴
+  the placebo null was globally-shuffled (ignored market-implied difficulty → inflated to +18.8%) and
+  🟡 the Kelly CI was stake-invariant (flat==Kelly bit-for-bit). FIXED both: `market_null_test` draws
+  each bet's outcome from the de-vigged closing prob (centers at CLV); `bootstrap_yield_ci` resamples
+  stake-weighted yield. Re-run confirms: null mean −5.45% ≈ CLV −5.36%, real −4.7% inside
+  (real_exceeds_null_95pct=False), Kelly CI now differs from flat. 1 net new test, gate green (103).
+  Open: D1 trial-log/ξ-tune; low-sev: joint same-day Kelly, devig-fallback logging. Next: Phase 5 ML
+  challenger (walled-off LightGBM; must beat DC AND the closing line).

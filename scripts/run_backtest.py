@@ -20,7 +20,7 @@ import typer
 from matchscout.backtest.baselines import baseline_picks
 from matchscout.backtest.engine import settle_bets
 from matchscout.backtest.metrics import summary, verdict
-from matchscout.backtest.placebo import placebo_test
+from matchscout.backtest.placebo import market_null_test
 from matchscout.data.football_data_co_uk import FootballDataCoUk
 from matchscout.evaluation.walk_forward import walk_forward_predict
 from matchscout.value.edge import select_value_bets
@@ -61,8 +61,8 @@ def main(
         bl = settle_bets(bp, matches, odds, staking="flat", flat_unit=flat_unit)
         result["baselines_flat_yield"][strategy] = summary(bl).get("yield")
 
-    # Leak guard: the real yield should sit inside the label-permutation distribution (no edge).
-    result["placebo"] = placebo_test(picks, matches, odds, n=50, flat_unit=flat_unit)
+    # Leak guard: the real yield should sit inside the market-implied null (no edge).
+    result["market_null"] = market_null_test(picks, matches, odds, n=1000, flat_unit=flat_unit)
 
     typer.echo(json.dumps(result, indent=2))
 
