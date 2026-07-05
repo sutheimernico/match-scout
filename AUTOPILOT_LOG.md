@@ -168,3 +168,12 @@ One line per iteration. Newest last.
   `npm build` green; dev server serves it. LIMITATION: leagues are off-season so live tips = WM only;
   can't visually verify the render here (Nico's eye). Still open: Pages deploy + portfolio tile (needs
   remote), conservative-shrinkage option for thin WM tips.
+- 2026-07-05 — Live board made data-driven (Nico: "hardcoded to WM / what about Bundesliga in 3
+  weeks / feels rigid"). Root fix: the live tips section no longer references any specific tournament.
+  Added league codes (PL/BL1/SA/PD/FL1) to the football-data.org provider; export now emits
+  `upcoming.json` = a list of competition groups for whatever has scheduled fixtures (queries
+  WC/CL/EC + the 5 leagues for the current season, keeps those with fixtures the model can fit).
+  New `LiveTips` React component with competition tabs (useState) renders groups generically — today
+  only World Cup shows; when the leagues kick off they appear as tabs with zero code change. Evergreen
+  copy + a live-status line for a less static feel. Deleted the WM-hardcoded TipsBoard. Build green,
+  ruff clean, serves. `_backtest` unchanged (Top-5 aggregate + per-league still current).
