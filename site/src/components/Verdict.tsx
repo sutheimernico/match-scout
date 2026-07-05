@@ -13,9 +13,9 @@ export default function Verdict({ data }: { data: BacktestData }) {
           {deltaPct.toFixed(1)}%
         </span>
         <p className="verdict-lede">
-          Starting at {data.start_bankroll} units, the bot's bankroll ended at{" "}
-          <b>{Math.round(flat.final_bankroll)}</b> — a {negative ? "loss" : "gain"} over{" "}
-          {data.league} {data.seasons.join(" & ")}.
+          Flat 10-unit stakes across the <b>Top-5 European leagues</b> ({data.seasons.join(" & ")})
+          {" "}left a net {negative ? "loss" : "gain"} of{" "}
+          <b>{Math.abs(Math.round(flat.profit))} units</b> on {Math.round(flat.total_staked)} staked.
         </p>
       </div>
       <p className="verdict-line">{data.headline_verdict}</p>

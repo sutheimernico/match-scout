@@ -368,6 +368,47 @@ footer {
   padding-top: 18px;
 }
 
+/* ---------- league breakdown ---------- */
+.leagues {
+  display: grid;
+  gap: 11px;
+}
+.league-row {
+  display: grid;
+  grid-template-columns: 132px 1fr 66px auto;
+  align-items: center;
+  gap: 14px;
+}
+.lg-name {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.lg-track {
+  height: 10px;
+  background: var(--page);
+  border: 1px solid var(--hair);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.lg-fill {
+  display: block;
+  height: 100%;
+  background: var(--down);
+}
+.lg-yield {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--down);
+  text-align: right;
+  font-size: 0.92rem;
+}
+.lg-meta {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 @media (max-width: 560px) {
   .insight {
     grid-template-columns: 1fr;
@@ -375,6 +416,12 @@ footer {
   }
   .verdict-headline {
     gap: 12px;
+  }
+  .league-row {
+    grid-template-columns: 96px 1fr 58px;
+  }
+  .lg-meta {
+    display: none;
   }
 }
 

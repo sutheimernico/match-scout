@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Disclaimer from "./components/Disclaimer";
 import HowItWorks from "./components/HowItWorks";
 import Insight from "./components/Insight";
+import LeagueBreakdown from "./components/LeagueBreakdown";
 import TipsBoard from "./components/TipsBoard";
 import TrackRecord from "./components/TrackRecord";
 import Verdict from "./components/Verdict";
@@ -27,21 +28,23 @@ export default function App() {
       <header className="masthead">
         <p className="kicker">match-scout · an honest football betting lab</p>
         <h1>
-          A bot bet on{" "}
-          {backtest ? backtest.schemes.flat.summary.n_bets : "hundreds of"} football matches.
+          A bot placed{" "}
+          {backtest ? backtest.schemes.flat.summary.n_bets.toLocaleString() : "thousands of"} paper
+          bets across Europe's top leagues.
           <br />
           Did it beat the bookmakers?
         </h1>
         <p className="dek">
-          A systematic model predicts every match, finds where it disagrees with the price, and
-          places paper bets — then we measure, honestly, whether it comes out ahead. Spoiler in the
-          number below.
+          A systematic model predicts every match in the Top-5 leagues, finds where it disagrees with
+          the price, and places paper bets — then we measure, honestly, whether it comes out ahead.
+          Spoiler in the number below.
         </p>
         <span className="paper-chip">● paper-only · no real money</span>
       </header>
 
       {backtest && <Verdict data={backtest} />}
       {backtest && <TrackRecord data={backtest} />}
+      {backtest && <LeagueBreakdown data={backtest} />}
       {backtest && <Insight data={backtest} />}
       <HowItWorks />
       {tips && <TipsBoard data={tips} />}

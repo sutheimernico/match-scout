@@ -1,5 +1,5 @@
 import type { BacktestData } from "../types";
-import BankrollChart from "./BankrollChart";
+import ProfitChart from "./ProfitChart";
 
 export default function TrackRecord({ data }: { data: BacktestData }) {
   const series = [
@@ -8,16 +8,16 @@ export default function TrackRecord({ data }: { data: BacktestData }) {
   ];
   return (
     <section>
-      <h2>The bot's track record over time</h2>
+      <h2>The bot's running profit over time</h2>
       <p className="section-lede">
-        It placed a paper bet whenever its model disagreed with the price — matchday after matchday.
-        Two staking styles run side by side: a <b>flat</b> stake and a bankroll-adjusted{" "}
-        <b>Kelly</b> stake. Both drift below the {data.start_bankroll}-unit start and never recover.
+        Betting across the <b>Top-5 European leagues</b> — England, Spain, Germany, Italy, France —
+        matchday after matchday. Two staking styles run side by side: a <b>flat</b> stake and a
+        bankroll-adjusted <b>Kelly</b> stake. Both fall below break-even and stay there.
       </p>
-      <BankrollChart series={series} start={data.start_bankroll} />
+      <ProfitChart series={series} />
       <p className="caption">
-        {data.date_range[0]} → {data.date_range[1]} · walk-forward, model refit on past results only
-        (no lookahead). A rising line would mean it beat the market.
+        Cumulative profit in units · {data.date_range[0]} → {data.date_range[1]} · walk-forward, model
+        refit on past results only (no lookahead). A rising line would mean it beat the market.
       </p>
     </section>
   );

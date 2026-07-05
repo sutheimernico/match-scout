@@ -46,12 +46,20 @@ export interface Summary {
 
 export interface Scheme {
   summary: Summary;
-  curve: { date: string; bankroll: number }[];
+  curve: { date: string; profit: number }[];
   verdict: string;
 }
 
-export interface BacktestData {
+export interface LeagueStat {
   league: string;
+  n_bets: number;
+  yield: number;
+  clv_beat_rate: number;
+  final_bankroll: number;
+}
+
+export interface BacktestData {
+  competitions: string[];
   seasons: string[];
   start_bankroll: number;
   date_range: [string, string];
@@ -59,6 +67,7 @@ export interface BacktestData {
   clv_mean: number;
   headline_verdict: string;
   schemes: { flat: Scheme; kelly: Scheme };
+  per_league: LeagueStat[];
 }
 
 export interface Meta {
