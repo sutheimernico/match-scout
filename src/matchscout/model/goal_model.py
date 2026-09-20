@@ -9,9 +9,13 @@ advantage and base rate complete the model:
 `fit_poisson` is the rho=0 / no-time-decay ablation baseline (council D9). `fit_dixon_coles`
 adds the Dixon-Coles tau low-score correction (fitted rho) and exponential time-decay
 (older matches down-weighted by a half-life). Both fit by maximum likelihood on the PLAYED
-matches the caller passes — only matches before the prediction matchday, so no lookahead. A
-small ridge penalty resolves attack/defence identifiability and doubles as promoted-team
-shrinkage toward the league mean (D9).
+matches the caller passes. A small ridge penalty resolves attack/defence identifiability and
+doubles as promoted-team shrinkage toward the league mean (D9).
+
+No-lookahead is enforced here, not trusted: `fit_dixon_coles` requires an `as_of` date and
+raises `LookaheadError` if any training match is dated on or after it. Caller discipline used
+to be the only guard (`walk_forward.py`'s `< day` filter); now every future caller — the
+forward paper loop included — inherits the protection by construction.
 """
 
 from __future__ import annotations
@@ -23,6 +27,43 @@ import pandas as pd
 from scipy.optimize import minimize
 
 from matchscout.model.poisson import market_probs, score_matrix
+
+
+class LookaheadError(ValueError):
+    """Raised when a fit would train on a match dated on or after its prediction date."""
+
+
+def _align(dates: pd.Series, as_of) -> tuple[pd.Series, pd.Timestamp]:
+    """Put a date column and a reference timestamp on the same timezone footing.
+
+    Sources differ (football-data.co.uk is tz-naive local, football-data.org is tz-aware UTC),
+    and a naive-vs-aware comparison raises instead of answering — which would turn the guard
+    below into a crash rather than a check.
+    """
+    dates = pd.to_datetime(dates)
+    ref = pd.Timestamp(as_of)
+    tz = dates.dt.tz
+    if tz is None:
+        ref = ref.tz_convert("UTC").tz_localize(None) if ref.tz is not None else ref
+    else:
+        ref = ref.tz_localize(tz) if ref.tz is None else ref.tz_convert(tz)
+    return dates, ref
+
+
+def _assert_no_lookahead(played: pd.DataFrame, as_of) -> None:
+    """Hard-fail if the training frame reaches into (or onto) the prediction day."""
+    if "date" not in played.columns:
+        raise LookaheadError(
+            "fit: as_of was given but the training frame has no `date` column — "
+            "an undated frame cannot be proven free of lookahead."
+        )
+    dates, ref = _align(played["date"], as_of)
+    offenders = int((dates >= ref).sum())
+    if offenders:
+        raise LookaheadError(
+            f"fit: {offenders} training match(es) dated on or after as_of={ref} "
+            f"(latest {dates.max()}) — a model may never see its own prediction day."
+        )
 
 
 @dataclass(frozen=True)
@@ -93,6 +134,8 @@ def _fit(
     played = matches[matches["status"] == "played"]
     if played.empty:
         raise ValueError("fit: no played matches to fit on")
+    if as_of is not None:
+        _assert_no_lookahead(played, as_of)
 
     teams = sorted(set(played["home"]) | set(played["away"]))
     idx = {t: i for i, t in enumerate(teams)}
@@ -104,8 +147,9 @@ def _fit(
     ag = played["ft_away_goals"].astype(float).to_numpy()
 
     if half_life_days is not None:
-        ref = pd.to_datetime(as_of) if as_of is not None else pd.to_datetime(played["date"]).max()
-        age = (ref - pd.to_datetime(played["date"])).dt.days.clip(lower=0).to_numpy()
+        dates = pd.to_datetime(played["date"])
+        dates, ref = _align(dates, as_of) if as_of is not None else (dates, dates.max())
+        age = (ref - dates).dt.days.clip(lower=0).to_numpy()
         weights = np.exp(-np.log(2) / half_life_days * age)
     else:
         weights = np.ones(len(hi))
@@ -147,22 +191,29 @@ def _fit(
     )
 
 
-def fit_poisson(matches: pd.DataFrame, *, ridge: float = 0.01) -> GoalModel:
-    """Fit the rho=0 / no-time-decay Poisson ablation baseline."""
-    return _fit(matches, fit_rho=False, ridge=ridge)
+def fit_poisson(
+    matches: pd.DataFrame, *, ridge: float = 0.01, as_of: pd.Timestamp | None = None
+) -> GoalModel:
+    """Fit the rho=0 / no-time-decay Poisson ablation baseline.
+
+    `as_of` is optional here because this baseline is an offline ablation that never prices a
+    bet; when given it is enforced exactly as in `fit_dixon_coles`.
+    """
+    return _fit(matches, fit_rho=False, ridge=ridge, as_of=as_of)
 
 
 def fit_dixon_coles(
     matches: pd.DataFrame,
     *,
+    as_of: pd.Timestamp,
     ridge: float = 0.01,
     half_life_days: float | None = None,
-    as_of: pd.Timestamp | None = None,
 ) -> GoalModel:
     """Fit the full Dixon-Coles model: fitted low-score rho + optional exponential time-decay.
 
-    `half_life_days` sets the decay (older matches down-weighted); `as_of` is the reference
-    date (defaults to the latest played date). Leave `half_life_days` None for no decay.
+    `as_of` is REQUIRED and is both the decay reference and the no-lookahead boundary: every
+    training match must be dated strictly before it, or the fit raises `LookaheadError`.
+    `half_life_days` sets the decay (older matches down-weighted); None disables it.
     """
     return _fit(
         matches, fit_rho=True, ridge=ridge, half_life_days=half_life_days, as_of=as_of

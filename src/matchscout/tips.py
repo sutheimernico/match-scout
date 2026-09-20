@@ -28,10 +28,14 @@ def fixture_tips(
     train_matches: pd.DataFrame,
     fixtures: pd.DataFrame,
     *,
+    as_of: pd.Timestamp,
     half_life_days: float | None = 365.0,
-    as_of: pd.Timestamp | None = None,
 ) -> pd.DataFrame:
-    """Fit Dixon-Coles on played `train_matches`; return the goals-market board per fixture."""
+    """Fit Dixon-Coles on played `train_matches`; return the goals-market board per fixture.
+
+    `as_of` is required: it is the moment the tips are made, and the fit rejects any training
+    match dated on or after it (`LookaheadError`).
+    """
     model = fit_dixon_coles(train_matches, half_life_days=half_life_days, as_of=as_of)
     teams = set(model.teams)
 
