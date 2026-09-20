@@ -113,3 +113,9 @@ Accepted changes (ID'd so the spec/PLAN can reference them):
 - The `betting-methodology-reviewer` subagent prompt is updated to check: subgroup-slice trial
   counting, odds-provenance, the placebo test, Max/Avg-price rejection, and Shin de-vig.
 - `PLAN.md` and the spec are edited in the same commit to reflect D1–D11.
+
+## Addenda
+
+- **2026-09-20 — D1 CLOSED.** Trial log + trials-adjusted DSR hurdle shipped; design-fold vs.
+  holdout-fold pre-registration rule recorded. See ADR 0003. The interim caveat "no edge under
+  this untuned config" is retired in favour of the measured DSR verdict.
