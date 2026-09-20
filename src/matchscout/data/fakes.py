@@ -31,5 +31,22 @@ class FakeProvider:
         return df.copy() if df is not None else _empty(schema.ODDS_COLUMNS)
 
 
+class FakeFixtureProvider:
+    """A FixtureProvider over in-memory (matches, odds) pairs keyed by (competition, season)."""
+
+    def __init__(
+        self, upcoming: dict[tuple[str, str], tuple[pd.DataFrame, pd.DataFrame]] | None = None
+    ) -> None:
+        self._upcoming = upcoming or {}
+
+    def fetch_upcoming(
+        self, competition: str, season: str
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+        pair = self._upcoming.get((competition, season))
+        if pair is None:
+            return _empty(schema.MATCH_COLUMNS), _empty(schema.ODDS_COLUMNS)
+        return pair[0].copy(), pair[1].copy()
+
+
 def _empty(columns: list[str]) -> pd.DataFrame:
     return pd.DataFrame({c: pd.Series(dtype="object") for c in columns})

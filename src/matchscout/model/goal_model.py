@@ -26,28 +26,12 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 
+from matchscout.data.schema import align_timestamps
 from matchscout.model.poisson import market_probs, score_matrix
 
 
 class LookaheadError(ValueError):
     """Raised when a fit would train on a match dated on or after its prediction date."""
-
-
-def _align(dates: pd.Series, as_of) -> tuple[pd.Series, pd.Timestamp]:
-    """Put a date column and a reference timestamp on the same timezone footing.
-
-    Sources differ (football-data.co.uk is tz-naive local, football-data.org is tz-aware UTC),
-    and a naive-vs-aware comparison raises instead of answering — which would turn the guard
-    below into a crash rather than a check.
-    """
-    dates = pd.to_datetime(dates)
-    ref = pd.Timestamp(as_of)
-    tz = dates.dt.tz
-    if tz is None:
-        ref = ref.tz_convert("UTC").tz_localize(None) if ref.tz is not None else ref
-    else:
-        ref = ref.tz_localize(tz) if ref.tz is None else ref.tz_convert(tz)
-    return dates, ref
 
 
 def _assert_no_lookahead(played: pd.DataFrame, as_of) -> None:
@@ -57,7 +41,7 @@ def _assert_no_lookahead(played: pd.DataFrame, as_of) -> None:
             "fit: as_of was given but the training frame has no `date` column — "
             "an undated frame cannot be proven free of lookahead."
         )
-    dates, ref = _align(played["date"], as_of)
+    dates, ref = align_timestamps(played["date"], as_of)
     offenders = int((dates >= ref).sum())
     if offenders:
         raise LookaheadError(
@@ -148,7 +132,10 @@ def _fit(
 
     if half_life_days is not None:
         dates = pd.to_datetime(played["date"])
-        dates, ref = _align(dates, as_of) if as_of is not None else (dates, dates.max())
+        if as_of is not None:
+            dates, ref = align_timestamps(dates, as_of)
+        else:
+            ref = dates.max()
         age = (ref - dates).dt.days.clip(lower=0).to_numpy()
         weights = np.exp(-np.log(2) / half_life_days * age)
     else:

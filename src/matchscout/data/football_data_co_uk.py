@@ -12,6 +12,7 @@ this stays offline-testable.
 
 from __future__ import annotations
 
+import codecs
 import io
 import time
 from collections.abc import Callable
@@ -34,6 +35,24 @@ DIVISIONS: dict[str, str] = {
 }
 
 BASE_URL = "https://www.football-data.co.uk/mmz4281"
+FIXTURES_URL = "https://www.football-data.co.uk/fixtures.csv"
+
+
+def season_code(date) -> str:
+    """The football-data.co.uk season code covering `date`, e.g. 2026-09-20 -> "2627".
+
+    A season spans August to May, so the unattended pipeline must not need editing every
+    August: months 7-12 belong to the season starting that year, months 1-6 to the one before.
+    """
+    ts = pd.Timestamp(date)
+    start = ts.year if ts.month >= 7 else ts.year - 1
+    return f"{start % 100:02d}{(start + 1) % 100:02d}"
+
+
+def previous_season_code(season: str) -> str:
+    """The code of the season before `season` ("2627" -> "2526")."""
+    start = int(season[:2])
+    return f"{(start - 1) % 100:02d}{start % 100:02d}"
 
 
 def season_url(season: str, div: str) -> str:
@@ -178,7 +197,9 @@ def _build_odds(raw: pd.DataFrame, match_id: pd.Series, specs: list[_OddsSpec]) 
 
 def _read_csv(content: bytes) -> pd.DataFrame:
     # football-data.co.uk CSVs are latin-1 encoded and often carry trailing blank columns.
-    return pd.read_csv(io.BytesIO(content), encoding="latin-1")
+    # Some files (the fixtures feed, current-season files) additionally start with a UTF-8 BOM,
+    # which latin-1 would decode into the first column's name and make `Div` unfindable.
+    return pd.read_csv(io.BytesIO(content.removeprefix(codecs.BOM_UTF8)), encoding="latin-1")
 
 
 def _get_with_retry(
@@ -228,6 +249,87 @@ def fetch_raw(
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(content)
     return _read_csv(content)
+
+
+def parse_fixtures(
+    raw: pd.DataFrame, competition: str, season: str
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Parse the upcoming-fixtures feed into canonical (matches, odds) for one competition.
+
+    The feed is one file for every division, with the result columns simply absent — so the
+    rows are added as missing and `parse` classifies every fixture as `scheduled`. The closing
+    (`C`) columns exist but are empty until the match is played; `_build_odds` drops them, so a
+    fixture never carries an invented closing price.
+    """
+    div = raw[raw["Div"] == DIVISIONS[competition]].copy()
+    for column in ("FTHG", "FTAG"):
+        if column not in div.columns:
+            div[column] = pd.NA
+    return parse(div, competition, season)
+
+
+def fetch_fixtures_raw(
+    cache_dir: Path,
+    *,
+    run_date,
+    client: httpx.Client | None = None,
+    refresh: bool = False,
+    retries: int = 3,
+    sleep: Callable[[float], None] = time.sleep,
+) -> pd.DataFrame:
+    """Fetch the upcoming-fixtures CSV (all divisions), cached per run date.
+
+    This file is what makes a key-free forward loop possible: the season CSVs carry played
+    matches only — verified 2026-09-20, the live 2026/27 E0 file had zero unplayed rows — while
+    this one carries the next few days of fixtures WITH pre-match prices. It is volatile (rows
+    disappear as matches play), so the cache is keyed by the run date, never by season.
+    """
+    stamp = pd.Timestamp(run_date).strftime("%Y%m%d")
+    path = Path(cache_dir) / "football_data_co_uk" / "fixtures" / f"{stamp}.csv"
+    if path.exists() and not refresh:
+        return _read_csv(path.read_bytes())
+
+    owns_client = client is None
+    client = client or httpx.Client(timeout=30.0, follow_redirects=True)
+    try:
+        content = _get_with_retry(client, FIXTURES_URL, retries, sleep)
+    finally:
+        if owns_client:
+            client.close()
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(content)
+    return _read_csv(content)
+
+
+class FootballDataCoUkFixtures:
+    """FixtureProvider over the upcoming-fixtures feed (pre-match prices, no results).
+
+    One HTTP fetch serves every competition of a run: the raw frame is fetched once, cached on
+    disk per run date, and sliced per division.
+    """
+
+    def __init__(
+        self, cache_dir: Path, *, run_date, client: httpx.Client | None = None
+    ) -> None:
+        self.cache_dir = Path(cache_dir)
+        self.run_date = run_date
+        self._client = client
+        self._raw: pd.DataFrame | None = None
+
+    def _load_raw(self) -> pd.DataFrame:
+        if self._raw is None:
+            self._raw = fetch_fixtures_raw(
+                self.cache_dir, run_date=self.run_date, client=self._client
+            )
+        return self._raw
+
+    def fetch_upcoming(
+        self, competition: str, season: str
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+        if competition not in DIVISIONS:
+            raise KeyError(f"unknown competition {competition!r}; known: {sorted(DIVISIONS)}")
+        return parse_fixtures(self._load_raw(), competition, season)
 
 
 class FootballDataCoUk:

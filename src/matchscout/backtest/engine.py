@@ -40,9 +40,17 @@ def _match_outcomes(matches: pd.DataFrame) -> pd.DataFrame:
 
 
 def closing_probs(
-    odds: pd.DataFrame, method: Callable[[np.ndarray], np.ndarray]
+    odds: pd.DataFrame,
+    method: Callable[[np.ndarray], np.ndarray],
+    book: str = "PS",
 ) -> dict[tuple[str, str, str], float]:
-    closing = odds[(odds["book"] == "PS") & (odds["is_closing"].astype(bool))]
+    """De-vigged closing probabilities per (match_id, market, selection) for one book.
+
+    Pinnacle (`PS`) is the default and the sharpest reference. It is a parameter because the
+    source dropped Pinnacle from its current-season files (verified 2026-09-20), so the forward
+    loop has to fall back to the next-best closing book and record which one it used.
+    """
+    closing = odds[(odds["book"] == book) & (odds["is_closing"].astype(bool))]
     out: dict[tuple[str, str, str], float] = {}
     for (match_id, market), group in closing.groupby(["match_id", "market"]):
         order = _ORDER.get(str(market))

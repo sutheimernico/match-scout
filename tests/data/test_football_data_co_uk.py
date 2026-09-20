@@ -176,3 +176,18 @@ def test_unknown_competition_raises(tmp_path):
     prov = fd.FootballDataCoUk(tmp_path)
     with pytest.raises(KeyError, match="unknown competition"):
         prov.fetch_matches("XX", "2324")
+
+
+def test_a_utf8_bom_never_hides_the_first_column():
+    # The fixtures feed and current-season files ship with a BOM; latin-1 would fold it into
+    # the `Div` column name and every division filter would miss.
+    body = b"\xef\xbb\xbfDiv,Date,HomeTeam,AwayTeam,FTHG,FTAG\nE0,01/08/2026,Arsenal,Chelsea,1,0\n"
+    frame = fd._read_csv(body)
+    assert list(frame.columns)[0] == "Div"
+
+
+def test_season_code_follows_the_august_to_may_season():
+    assert fd.season_code("2026-09-20") == "2627"
+    assert fd.season_code("2027-01-05") == "2627"
+    assert fd.season_code("2027-07-01") == "2728"
+    assert fd.previous_season_code("2627") == "2526"

@@ -71,6 +71,21 @@ class SchemaError(ValueError):
     """Raised when a DataFrame does not conform to the canonical schema."""
 
 
+def align_timestamps(dates: pd.Series, reference) -> tuple[pd.Series, pd.Timestamp]:
+    """Put a date column and a reference timestamp on the same timezone footing.
+
+    The two free sources disagree: football-data.co.uk is tz-naive local time,
+    football-data.org is tz-aware UTC. Comparing one against the other raises instead of
+    answering, which would turn every point-in-time guard into a crash rather than a check.
+    """
+    dates = pd.to_datetime(dates)
+    ref = pd.Timestamp(reference)
+    tz = dates.dt.tz
+    if tz is None:
+        return dates, (ref.tz_convert("UTC").tz_localize(None) if ref.tz is not None else ref)
+    return dates, (ref.tz_localize(tz) if ref.tz is None else ref.tz_convert(tz))
+
+
 def validate_matches(df: pd.DataFrame) -> pd.DataFrame:
     """Validate a canonical `matches` frame in place; return it for chaining."""
     _require_columns(df, MATCH_COLUMNS, "matches")

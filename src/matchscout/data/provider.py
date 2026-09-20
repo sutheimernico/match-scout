@@ -24,3 +24,23 @@ class OddsProvider(Protocol):
     def fetch_odds(self, competition: str, season: str) -> pd.DataFrame:
         """Return canonical `odds` rows for one competition-season (may be empty)."""
         ...
+
+
+@runtime_checkable
+class HistoryProvider(MatchProvider, OddsProvider, Protocol):
+    """Both halves of one source — what the forward loop needs to settle what it placed."""
+
+
+@runtime_checkable
+class FixtureProvider(Protocol):
+    """Forward-looking seam: not-yet-played fixtures WITH their pre-match prices.
+
+    Returns both tables at once because the sources deliver them in one file, and fetching
+    twice would risk the two halves disagreeing about which fixtures exist.
+    """
+
+    def fetch_upcoming(
+        self, competition: str, season: str
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+        """Return canonical (matches, odds) for upcoming fixtures (may be empty)."""
+        ...
