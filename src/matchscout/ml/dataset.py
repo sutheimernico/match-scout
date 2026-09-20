@@ -1,10 +1,12 @@
 """Feature dataset for the walled-off 1X2 ML challenger.
 
-Features are pre-match and point-in-time by construction: the Dixon-Coles walk-forward
-probabilities (already leak-free) plus the Shin-de-vigged market closing probabilities. The
-market feature is deliberately included — per council D11 this makes "beats Dixon-Coles" nearly
-automatic and uninteresting; only "beats the closing line" is the real test, so the challenger is
-judged on the market, not on DC.
+Two feature blocks: the Dixon-Coles walk-forward probabilities (pre-match and leak-free by
+construction) and the Shin-de-vigged market CLOSING probabilities. The closing price only exists
+at kickoff, so this dataset is NOT point-in-time and the challenger trained on it is not a
+deployable pre-match model — it is a market-relative diagnostic, which is exactly its council-D11
+purpose: with the market probability as an input, "beats Dixon-Coles" is nearly automatic and
+uninteresting, and only "beats the closing line" is a real test. Nothing here ever prices or
+selects a bet; the selection path (`value/edge.py`) never touches closing odds.
 """
 
 from __future__ import annotations
