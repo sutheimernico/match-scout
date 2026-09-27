@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>match-scout Spieltag</title><style>
+:root{--page:#f9f9f7;--surface:#fff;--ink:#111;--ink-2:#52514e;--muted:#898781;--hair:#e5e4de;
+--up:#0a7a2f;--down:#c0392b;--accent:#2a78d6;--warn-bg:#fff4e5;--warn-ink:#7a4a00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#141414;--surface:#1c1c1c;
+--ink:#eee;--ink-2:#b5b3ad;--muted:#8a8883;--hair:#2e2e2c;--up:#4cc26f;--down:#ff6b5e;
+--accent:#6aa8ff;--warn-bg:#2d2414;--warn-ink:#f0c27a}}
+:root[data-theme="dark"]{--page:#141414;--surface:#1c1c1c;--ink:#eee;--ink-2:#b5b3ad;
+--muted:#8a8883;--hair:#2e2e2c;--up:#4cc26f;--down:#ff6b5e;--accent:#6aa8ff;--warn-bg:#2d2414;
+--warn-ink:#f0c27a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);
+font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:1.6rem;margin:.2em 0}h2{font-size:1.2rem;margin:1.6em 0 .4em}
+h3{font-size:1rem;margin:1.2em 0 .3em;color:var(--ink-2)}
+.kicker{color:var(--muted);font-size:.85rem;margin:0}
+.warn{background:var(--warn-bg);color:var(--warn-ink);border-radius:8px;padding:10px 14px;
+font-size:.9rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--hair);border-radius:8px;padding:10px 12px}
+.tile b{display:block;font-size:1.35rem}.tile span{color:var(--ink-2);font-size:.85rem}
+.verdict{color:var(--ink-2);font-size:.9rem;margin:.6em 0 0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem;background:var(--surface)}
+th,td{padding:6px 8px;border-bottom:1px solid var(--hair);text-align:left;white-space:nowrap}
+th{color:var(--muted);font-weight:600;font-size:.78rem}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.down{color:var(--down)}.muted{color:var(--muted)}
+.bet{font-weight:600;color:var(--accent)}
+footer{margin-top:32px;color:var(--muted);font-size:.8rem}
+</style></head>
+<body><main>
+<p class="kicker">match-scout · Stand 27.09.2026 14:50 Uhr</p>
+<h1>Spieltag: Modell gegen Markt</h1>
+<p class="warn">Simulation mit Papier-Einsätzen — keine Wettempfehlung, kein Echtgeld. Erwartung laut Backtest: Verlust gegen den Markt. Backtest 2022/23 und 2023/24: 4.540 Papier-Wetten, Rendite −8,8 % (95-%-Intervall −12,8 % bis −4,8 %).</p>
+<h2>Forward-Bilanz seit 20.09.2026</h2>
+<div class="tiles"><div class="tile"><b>12</b><span>abgerechnete Papier-Wetten (1 gewonnen, 0 offen)</span></div><div class="tile"><b class="down">−105 E</b><span>Ergebnis bei 10 Einheiten je Wette</span></div><div class="tile"><b class="down">−87,5 %</b><span>Rendite · 95-%-Intervall −100 % bis −62 %</span></div><div class="tile"><b>0 %</b><span>schlagen die Schlussquote (CLV Ø −12,3 %, gegen Marktschnitt)</span></div></div><p class="verdict">Zu wenige Wetten für ein Urteil (n = 12 &lt; 30). Das Intervall ist so breit, dass Gewinn und Verlust gleichermaßen Zufall sein können.</p>
+<p class="warn">Gerade stehen keine Top-5-Spiele mit Quoten im Feed (z. B. Länderspielpause). Der nächste Lauf trägt sie ein, sobald football-data.co.uk die Quoten des Spieltags veröffentlicht — Prognosen entstehen immer vor dem Anpfiff.</p>
+<h2>Bundesliga</h2><h3>Abgerechnete Papier-Wetten</h3><div class="scroll"><table><thead><tr><th>Datum</th><th>Spiel</th><th>Wette</th><th>Quote</th><th>Ausgang</th><th>G/V (E)</th><th>CLV</th></tr></thead><tbody><tr><td>20.09.</td><td>Paderborn – Hoffenheim</td><td>Unter 2,5 Tore</td><td class="num">2,75</td><td>verloren</td><td class="num down">−10</td><td class="num">−19,7 %</td></tr><tr><td>20.09.</td><td>Paderborn – Hoffenheim</td><td>X (Remis)</td><td class="num">4,50</td><td>verloren</td><td class="num down">−10</td><td class="num">−2,4 %</td></tr><tr><td>20.09.</td><td>Paderborn – Hoffenheim</td><td>2 (Gast)</td><td class="num">1,67</td><td>verloren</td><td class="num down">−10</td><td class="num">−9,5 %</td></tr></tbody></table></div><h2>La Liga</h2><h3>Abgerechnete Papier-Wetten</h3><div class="scroll"><table><thead><tr><th>Datum</th><th>Spiel</th><th>Wette</th><th>Quote</th><th>Ausgang</th><th>G/V (E)</th><th>CLV</th></tr></thead><tbody><tr><td>20.09.</td><td>Villarreal – Levante</td><td>Über 2,5 Tore</td><td class="num">1,50</td><td>gewonnen</td><td class="num up">5</td><td class="num">−5,3 %</td></tr><tr><td>20.09.</td><td>Valencia – Sociedad</td><td>1 (Heim)</td><td class="num">2,70</td><td>verloren</td><td class="num down">−10</td><td class="num">−11,1 %</td></tr><tr><td>20.09.</td><td>La Coruna – Betis</td><td>1 (Heim)</td><td class="num">3,40</td><td>verloren</td><td class="num down">−10</td><td class="num">−15,1 %</td></tr></tbody></table></div><h2>Serie A</h2><h3>Abgerechnete Papier-Wetten</h3><div class="scroll"><table><thead><tr><th>Datum</th><th>Spiel</th><th>Wette</th><th>Quote</th><th>Ausgang</th><th>G/V (E)</th><th>CLV</th></tr></thead><tbody><tr><td>20.09.</td><td>Milan – Lecce</td><td>Unter 2,5 Tore</td><td class="num">2,20</td><td>verloren</td><td class="num down">−10</td><td class="num">−16,3 %</td></tr><tr><td>20.09.</td><td>Milan – Lecce</td><td>X (Remis)</td><td class="num">5,75</td><td>verloren</td><td class="num down">−10</td><td class="num">−16,6 %</td></tr><tr><td>20.09.</td><td>Milan – Lecce</td><td>2 (Gast)</td><td class="num">11,00</td><td>verloren</td><td class="num down">−10</td><td class="num">−30,1 %</td></tr></tbody></table></div><h2>Ligue 1</h2><h3>Abgerechnete Papier-Wetten</h3><div class="scroll"><table><thead><tr><th>Datum</th><th>Spiel</th><th>Wette</th><th>Quote</th><th>Ausgang</th><th>G/V (E)</th><th>CLV</th></tr></thead><tbody><tr><td>20.09.</td><td>Marseille – Paris SG</td><td>Unter 2,5 Tore</td><td class="num">3,20</td><td>verloren</td><td class="num down">−10</td><td class="num">−4,7 %</td></tr><tr><td>20.09.</td><td>Marseille – Paris SG</td><td>1 (Heim)</td><td class="num">7,00</td><td>verloren</td><td class="num down">−10</td><td class="num">−5,7 %</td></tr><tr><td>20.09.</td><td>Marseille – Paris SG</td><td>X (Remis)</td><td class="num">5,00</td><td>verloren</td><td class="num down">−10</td><td class="num">−11,1 %</td></tr></tbody></table></div>
+<h2>So liest du die Seite</h2>
+<p><b>Modell</b> = Dixon-Coles-Tormodell, nur mit Spielen vor dem Anpfiff gefittet.
+<b>Markt</b> = Bet365-Vorabquote ohne Buchmacher-Marge (Shin-Verfahren). Eine
+<b>Papier-Wette</b> entsteht nur, wenn Modell × Quote − 1 ≥ 5 % ist; sie wird mit dem Zeitpunkt
+gespeichert, zu dem sie feststand, und nie nachträglich geändert. <b>CLV</b> vergleicht die
+genommene Quote mit der Schlussquote: wer die Schlussquote dauerhaft schlägt, hat einen echten
+Vorteil — wer nicht, hatte Glück oder Pech.</p>
+<footer>Daten: football-data.co.uk (nur zur Spielvorhersage genutzt, nicht weitergegeben) ·
+Papier-Einsätze, keine Wettempfehlung · generiert aus data/bets.jsonl und
+data/predictions.jsonl</footer>
+</main></body></html>

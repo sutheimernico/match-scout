@@ -1,0 +1,83 @@
+{
+  "generated_at": "2026-09-27T12:50:07.371376+00:00",
+  "state": "settled",
+  "since": "2026-09-20",
+  "start_bankroll": 1000.0,
+  "bets": {
+    "n_bets": 12,
+    "total_staked": 120.0,
+    "profit": -105.0,
+    "yield": -0.875,
+    "yield_ci": [
+      -1.0,
+      -0.625
+    ],
+    "final_bankroll": 895.0,
+    "max_drawdown": -0.10101010101010101,
+    "clv_mean": -0.122980493430475,
+    "clv_beat_rate": 0.0,
+    "n_with_clv": 12,
+    "n_won": 1,
+    "n_pending": 0,
+    "n_void": 0,
+    "n_no_odds": 0,
+    "clv_books": {
+      "Avg": 12
+    },
+    "verdict": "Too few bets for a verdict (n=12 < 30).",
+    "curve": [
+      {
+        "date": "2026-09-20",
+        "profit": -10.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -20.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -30.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -40.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -50.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -60.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -70.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -80.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -90.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -100.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -110.0
+      },
+      {
+        "date": "2026-09-20",
+        "profit": -105.0
+      }
+    ]
+  },
+  "calibration": {
+    "n": 0,
+    "verdict": "No settled, priced predictions yet."
+  }
+}
