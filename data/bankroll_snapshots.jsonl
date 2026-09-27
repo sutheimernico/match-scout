@@ -1,1 +1,2 @@
 {"run_id": "2026-09-20", "as_of": "2026-09-20T15:06:16.338905+00:00", "trial_id": "9b8f7947839e", "bankroll": 1000.0, "n_settled": 0, "n_pending": 12, "n_no_odds": 0, "n_void": 0, "total_staked": 0.0, "profit": 0.0, "yield": null, "clv_mean": null, "clv_beat_rate": null}
+{"run_id": "2026-09-27", "as_of": "2026-09-27T12:39:14.006492+00:00", "trial_id": "9b8f7947839e", "bankroll": 895.0, "n_settled": 12, "n_pending": 0, "n_no_odds": 0, "n_void": 0, "total_staked": 120.0, "profit": -105.0, "yield": -0.875, "clv_mean": -0.122980493430475, "clv_beat_rate": 0.0}
