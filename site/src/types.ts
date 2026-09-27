@@ -83,3 +83,21 @@ export interface Meta {
   generated_at: string;
   disclaimer: string;
 }
+
+export interface ForwardData {
+  generated_at: string;
+  state: "empty" | "pending" | "settled";
+  since: string | null;
+  bets: {
+    n_bets: number;
+    n_won: number;
+    n_pending: number;
+    yield: number | null;
+    yield_ci?: [number | null, number | null];
+    clv_beat_rate: number | null;
+    clv_books: Record<string, number>;
+    verdict: string;
+    curve: { date: string; profit: number }[];
+  };
+  calibration: { n: number; brier_model?: number; brier_market?: number; verdict: string };
+}
