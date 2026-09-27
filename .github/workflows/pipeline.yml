@@ -1,0 +1,64 @@
+name: pipeline
+
+# The forward paper loop, self-operating. PAPER STAKES ONLY — no broker, no account.
+#
+# Inert until the repo has a remote (Needs Nico). When it is activated, remove the local cron
+# entry first (README "Jeden Spieltag" has the undo command): the ledger must have exactly one
+# writer, or two copies of data/bets.jsonl diverge.
+#
+# All logic lives in the tested Python CLIs; the bash here stays one-liners. Raw source CSVs
+# are fetched into the gitignored .cache/ on the runner and never committed — only the derived
+# ledgers under data/ and the pages under site/public/ are.
+
+on:
+  schedule:
+    - cron: "23 7,16 * * *" # 09:23 / 18:23 German summer time — after the source's afternoon price updates
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: pipeline
+  cancel-in-progress: false
+
+jobs:
+  forward:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+
+      - name: Advance the forward loop (predict, place, settle, snapshot)
+        run: uv run python scripts/run_forward.py > forward_run.json
+
+      - name: Rebuild the Spieltag page + forward.json from the ledgers
+        run: uv run python scripts/spieltag.py
+
+      - name: Commit the derived artifacts back
+        run: |
+          git config user.name "match-scout pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add data site/public
+          git diff --cached --quiet || git commit -m "chore(pipeline): forward run $(date -u +%F) [skip ci]"
+          git push origin HEAD:main
+
+  alert-on-failure:
+    needs: [forward]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open or update the pipeline-failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="Pipeline failure: forward run broke"
+          BODY="Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ($(date -u +%Y-%m-%dT%H:%MZ))"
+          EXISTING=$(gh issue list --repo "${{ github.repository }}" --state open --search "in:title \"$TITLE\"" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --repo "${{ github.repository }}" --body "$BODY"
+          else
+            gh issue create --repo "${{ github.repository }}" --title "$TITLE" --body "$BODY" --label pipeline
+          fi
