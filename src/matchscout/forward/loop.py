@@ -15,13 +15,15 @@ One run does five things, in this order:
    2026-09-20: the current-season CSV contains played matches only, so the fixtures feed — not
    the season file — is what makes this work without an API key.
 2. **Predict.** Dixon-Coles fit per competition on matches strictly before `now`
-   (`as_of=now`, hard-guarded in the model layer), then predict the upcoming fixtures.
+   (`as_of=now`, hard-guarded in the model layer), then predict the upcoming fixtures. Every
+   prediction — bet or not — goes to `data/predictions.jsonl` next to the market's de-vigged
+   view, first sighting wins (`forward/predictions.py`).
 3. **Place.** Value bets at the frozen config's threshold, priced at the pre-match book, and
    only on fixtures still `min_lead_hours` away. A fixture the model predicts but cannot price
    is written as a `no_odds` row with stake 0 — visible, never an invented price.
 4. **Settle.** Pending bets whose fixture has a result: won/lost at the price taken, CLV against
-   the best available closing book. Pending bets whose fixture never showed up (postponed,
-   renamed) are voided after `stale_after_days`.
+   the best available closing book. Open predictions get their score. Pending bets whose
+   fixture never showed up (postponed, renamed) are voided after `stale_after_days`.
 5. **Snapshot.** One append-only bankroll row per run.
 
 Idempotency is structural, not checked: the ledger refuses a known `bet_id` and refuses to settle
@@ -65,6 +67,12 @@ from matchscout.forward.ledger import (
     current_bets,
     place_bets,
     settle_bets,
+)
+from matchscout.forward.predictions import (
+    DEFAULT_PREDICTIONS,
+    PREDICTED,
+    record_predictions,
+    settle_predictions,
 )
 from matchscout.model.goal_model import fit_dixon_coles
 from matchscout.value.devig import devig_shin
@@ -185,6 +193,68 @@ def _not_yet_kicked_off(
     return fixtures[stamps > ref + pd.Timedelta(hours=min_lead_hours)]
 
 
+def _market_view(odds: pd.DataFrame, book: str) -> dict[str, dict[str, float]]:
+    """Pre-match prices at `book` and their Shin de-vigged probabilities, per match.
+
+    Keys `odds_<sel>` / `mkt_<sel>` for H/D/A and over/under. A market with a missing selection
+    gets prices but no `mkt_*`: de-vigging an incomplete book would invent the missing leg.
+    """
+    pre = odds[(odds["book"] == book) & (~odds["is_closing"].astype(bool))]
+    view: dict[str, dict[str, float]] = {}
+    for (match_id, market), group in pre.groupby(["match_id", "market"]):
+        prices = dict(zip(group["selection"], group["odds"].astype(float), strict=False))
+        entry = view.setdefault(match_id, {})
+        entry.update({f"odds_{sel}": price for sel, price in prices.items()})
+        legs = ("H", "D", "A") if market == "1x2" else ("over", "under")
+        if all(leg in prices for leg in legs):
+            probs = devig_shin([prices[leg] for leg in legs])
+            entry.update({f"mkt_{leg}": float(p) for leg, p in zip(legs, probs, strict=True)})
+    return view
+
+
+def _prediction_rows(
+    *,
+    preds: pd.DataFrame,
+    upcoming: pd.DataFrame,
+    odds: pd.DataFrame,
+    config: ForwardConfig,
+    competition: str,
+    now: pd.Timestamp,
+    run_id: str,
+) -> list[dict[str, Any]]:
+    market = _market_view(odds, config.book)
+    fixtures = upcoming.drop_duplicates("match_id").set_index("match_id")
+    rows = []
+    for pred in preds.itertuples():
+        fixture = fixtures.loc[pred.match_id]
+        rows.append(
+            {
+                "match_id": pred.match_id,
+                "competition": competition,
+                "date": str(fixture["date"])[:10],
+                "kickoff": str(fixture["timestamp_event"]),
+                "home": fixture["home"],
+                "away": fixture["away"],
+                **{column: float(getattr(pred, column)) for column in _PRED_COLUMNS[1:]},
+                "book": config.book,
+                **market.get(pred.match_id, {}),
+                "timestamp_known": now.isoformat(),
+                "run_id": run_id,
+                "trial_id": config.trial_id,
+                "status": PREDICTED,
+            }
+        )
+    return rows
+
+
+def _scores(matches: pd.DataFrame) -> dict[str, tuple[int, int]]:
+    played = matches[matches["status"] == "played"]
+    return {
+        row.match_id: (int(row.ft_home_goals), int(row.ft_away_goals))
+        for row in played.itertuples()
+    }
+
+
 def _closing_lookup(odds: pd.DataFrame) -> dict[tuple[str, str, str], tuple[float, str]]:
     """Best available de-vigged closing probability per selection, with the book it came from."""
     lookup: dict[tuple[str, str, str], tuple[float, str]] = {}
@@ -213,10 +283,12 @@ def _place_new_bets(
     now: pd.Timestamp,
     run_id: str,
     bets_path: Path | str,
+    predictions_path: Path | str,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     unpriced: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
+    predicted: list[dict[str, Any]] = []
 
     for competition in config.competitions:
         history = _played_before(
@@ -245,6 +317,15 @@ def _place_new_bets(
         if preds.empty:
             continue
         comp_odds = fixture_odds[fixture_odds["match_id"].isin(set(upcoming["match_id"]))]
+        predicted += _prediction_rows(
+            preds=preds,
+            upcoming=upcoming,
+            odds=comp_odds,
+            config=config,
+            competition=competition,
+            now=now,
+            run_id=run_id,
+        )
         picks = select_value_bets(
             preds, comp_odds, threshold=config.threshold, book=config.book
         )
@@ -303,7 +384,8 @@ def _place_new_bets(
 
     placed = place_bets(bets_path, rows)
     recorded = place_bets(bets_path, unpriced)
-    return {"placed": placed, "no_odds": recorded, "skipped": skipped}
+    logged = record_predictions(predictions_path, predicted)
+    return {"placed": placed, "no_odds": recorded, "skipped": skipped, "predicted": logged}
 
 
 def _settle_pending(
@@ -421,6 +503,7 @@ def run_forward(
     bets_path: Path | str = DEFAULT_BETS,
     snapshots_path: Path | str = DEFAULT_SNAPSHOTS,
     trial_log_path: Path | str = DEFAULT_TRIAL_LOG,
+    predictions_path: Path | str = DEFAULT_PREDICTIONS,
 ) -> dict[str, Any]:
     """Advance the paper loop by one run. Safe to call any number of times per day."""
     now = pd.Timestamp(now)
@@ -459,6 +542,7 @@ def run_forward(
         now=now,
         run_id=run_id,
         bets_path=bets_path,
+        predictions_path=predictions_path,
     )
     settlement = _settle_pending(
         config=config,
@@ -466,6 +550,10 @@ def run_forward(
         history_odds=history_odds,
         now=now,
         bets_path=bets_path,
+    )
+
+    predictions_settled = settle_predictions(
+        predictions_path, _scores(history_matches), settled_at=now.isoformat()
     )
 
     bets = current_bets(bets_path)
@@ -504,6 +592,8 @@ def run_forward(
         "config_newly_logged": logged_config,
         "n_placed": len(placement["placed"]),
         "n_no_odds": len(placement["no_odds"]),
+        "n_predicted": len(placement["predicted"]),
+        "n_predictions_settled_now": len(predictions_settled),
         "n_settled_now": len(settlement["settled"]),
         "n_voided_now": len(settlement["voided"]),
         "skipped_competitions": placement["skipped"],

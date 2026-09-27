@@ -13,6 +13,7 @@ from matchscout.data.fakes import FakeFixtureProvider, FakeProvider
 from matchscout.data.schema import MATCH_COLUMNS, ODDS_COLUMNS
 from matchscout.forward.ledger import NO_ODDS, PENDING, SETTLED, VOID, current_bets, load_events
 from matchscout.forward.loop import ForwardConfig, run_forward
+from matchscout.forward.predictions import current_predictions
 
 COMP = "E0"
 SEASON = "2627"
@@ -113,6 +114,7 @@ def paths(tmp_path):
         "bets_path": tmp_path / "bets.jsonl",
         "snapshots_path": tmp_path / "snapshots.jsonl",
         "trial_log_path": tmp_path / "trial_log.jsonl",
+        "predictions_path": tmp_path / "predictions.jsonl",
     }
 
 
@@ -406,3 +408,60 @@ def test_burn_in_skips_a_competition_instead_of_guessing(paths):
     assert out["n_placed"] == 0
     assert out["skipped_competitions"][0]["competition"] == COMP
     assert "burn-in" in out["skipped_competitions"][0]["reason"]
+
+
+def test_every_priced_fixture_is_predicted_with_the_market_view_bet_or_not(paths):
+    fixtures = pd.concat(
+        [_fixture("2026-04-01", "Ajax", "Fulham"), _fixture("2026-04-01", "Brest", "Celta")],
+        ignore_index=True,
+    )
+    mids = list(fixtures["match_id"])
+    fair = {"H": 2.5, "D": 3.3, "A": 3.0}  # a price the model will not bet
+    odds = pd.concat([_odds(mids[0], GENEROUS), _odds(mids[1], fair)], ignore_index=True)
+    history, fixture_provider = _providers(_history(), fixtures, odds)
+
+    out = run_forward(
+        now=pd.Timestamp("2026-03-30T09:00:00"),
+        history=history,
+        fixtures=fixture_provider,
+        config=CONFIG,
+        **paths,
+    )
+    assert out["n_predicted"] == 2
+    preds = current_predictions(paths["predictions_path"]).set_index("match_id")
+    assert preds.loc[mids[1], "odds_H"] == 2.5
+    market = preds.loc[mids[1], ["mkt_H", "mkt_D", "mkt_A"]].astype(float)
+    assert market.sum() == pytest.approx(1.0)  # de-vigged, not raw 1/odds
+    assert preds.loc[mids[0], "p_H"] + preds.loc[mids[0], "p_D"] + preds.loc[
+        mids[0], "p_A"
+    ] == pytest.approx(1.0)
+    assert preds.loc[mids[0], "timestamp_known"] == "2026-03-30T09:00:00"
+
+
+def test_a_played_fixture_settles_its_prediction(paths):
+    fixtures = _fixture("2026-04-01", "Ajax", "Fulham")
+    mid = fixtures.iloc[0]["match_id"]
+    history, fixture_provider = _providers(_history(), fixtures, _odds(mid, GENEROUS))
+    run_forward(
+        now=pd.Timestamp("2026-03-30T09:00:00"),
+        history=history,
+        fixtures=fixture_provider,
+        config=CONFIG,
+        **paths,
+    )
+    result = fixtures.copy()
+    result[["ft_home_goals", "ft_away_goals", "status"]] = [0, 1, "played"]
+    played = FakeProvider(
+        matches={(COMP, SEASON): pd.concat([_history(), result], ignore_index=True)},
+        odds={(COMP, SEASON): _empty(ODDS_COLUMNS)},
+    )
+    out = run_forward(
+        now=pd.Timestamp("2026-04-02T09:00:00"),
+        history=played,
+        fixtures=FakeFixtureProvider({}),
+        config=CONFIG,
+        **paths,
+    )
+    assert out["n_predictions_settled_now"] == 1
+    row = current_predictions(paths["predictions_path"]).iloc[0]
+    assert row["result"] == "A"

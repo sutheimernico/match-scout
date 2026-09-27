@@ -52,6 +52,26 @@ its last line, and the placement line stays readable forever. Columns are
 | `run_id` / `trial_id` | which loop run placed it, under which logged config |
 | `note` | free text (e.g. why a bet was voided) |
 
+## `predictions.jsonl` — every forward prediction, bet or not
+
+Append-only event log, one `predicted` line per fixture at first sighting (first write wins; an
+un-priced record is superseded once by the first priced one) and one `settled` line with the
+score. Columns are `matchscout.forward.predictions.PREDICTION_COLUMNS`:
+
+| field | meaning |
+| --- | --- |
+| `match_id` / `competition` / `date` / `home` / `away` | fixture identity, as the ingest builds it |
+| `kickoff` | kickoff as the source states it — UK local time, no offset |
+| `p_H` `p_D` `p_A` `p_over` `p_under` | Dixon-Coles probabilities at `timestamp_known` |
+| `book` / `odds_*` | pre-match prices at the selection book (null if the feed had none) |
+| `mkt_*` | the same prices, Shin de-vigged — the market's view, for calibration |
+| `timestamp_known` / `run_id` / `trial_id` | when, in which run, under which logged config |
+| `status` | `predicted` · `settled` |
+| `ft_home_goals` / `ft_away_goals` / `result` / `settled_at` | filled at settlement |
+
+Why it exists: the bets are a small sample selected on disagreement with the market. The
+predictions are every fixture, so model-vs-market calibration can be measured on all of them.
+
 ## `bankroll_snapshots.jsonl` — one row per forward run
 
 Append-only. Bankroll, settled/pending counts, running yield and CLV at that moment. Flat
