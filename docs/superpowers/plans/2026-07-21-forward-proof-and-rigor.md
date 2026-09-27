@@ -126,3 +126,58 @@ Deflated-Sharpe-Ratio-analog hurdle over the trial log: given N logged trials, t
 - Go for this plan. **Also: veto option** — this project was flagged as borderline in the review operation (betting simulation); if he'd rather freeze it, Phase A alone (truth & guards) is a worthwhile minimal go.
 - Remote + repo secret (`FOOTBALL_DATA_API_KEY`, free tier) to activate Phase 6/7 in CI; until then the forward loop runs locally/manually.
 - Publish decision later (separate publish-checklist run); the "honest quant methodology" README framing from Task 1 doubles as the portfolio text when that day comes.
+
+---
+
+## Outcome (2026-09-27)
+
+Executed on branch `feat/forward-proof` (not `feat/forward-and-rigor` as written above). Gate
+186 → 205 tests green, ruff clean, site builds. No remote, nothing pushed.
+
+| Task | State | Evidence |
+| --- | --- | --- |
+| 1 README reality-sync | done | README rewritten: phases with honest one-liners, real guard set (no shift-test), matchday how-to |
+| 2 Hard lookahead guard | done | `7ba2f7f` — `fit_dixon_coles(as_of=…)` raises on rows ≥ as_of |
+| 3 Trial log | done | `78ea05d` — `data/trial_log.jsonl`, 8 entries incl. backfill + forward config |
+| 4 ML docstring | done | `065c37c` |
+| 5 D7 odds gap | done | `afe8bd2` — `data/odds_gap_report.json` |
+| 6 Ledger | done | `4c99d4b` |
+| 7 Forward loop | done | `e3eacf0`, fixed in `be7d1bd` (see deviations), predictions log `91ca1f4` |
+| 8 Forward on dashboard | done | `0d30040` panel + `3b9313e` German Spieltag page |
+| 9 Workflows | done, inert | `1537ce3` — no actionlint on this machine; YAML parse-checked only |
+| 10 Calibration plots | **open** | not started |
+| 11 CLV deep-dive | **open** | not started |
+| 12 Subgroup explorer | **open** | not started |
+| 13 DSR hurdle | done | `90e8aa7` — ADR 0003; hurdle not met across 8 trials |
+
+**D7 findings.** Over 5,580 Top-5 matches (2022/23–2026/27) the Shin de-vigged gap between the
+Bet365 pre-match price and the close has a median of 1.2–1.3 pp (1X2) and 1.8–2.1 pp (O/U 2.5)
+against every reference close (Bet365, Pinnacle, market average); 57–74 % of prices move ≥ 1 pp.
+No segment is weak — CLV is a meaningful yardstick wherever the harness bets. Pinnacle disappears
+from the source mid-2025/26, so the forward loop measures CLV against the market-average close and
+records that per bet.
+
+**Forward state.** Run 2026-09-20 placed 12 paper bets; run 2026-09-27 settled them: 1 won,
+−105 units on 120 staked (yield −87.5 %, CI [−100 %, −62 %]), CLV beat 0/12 vs. the
+market-average close. n = 12 — no verdict, and the page says so. 2026-09-27 is inside an
+international break: the feed has no Top-5 fixtures; the next Top-5 matchday is 9–10 Oct 2026
+(football-data.org schedule), which the local cron will pick up once the prices are published.
+
+**Deviations.**
+- *Stale season cache (bug found by the first live run).* `FootballDataCoUk` never refreshed the
+  running season, so the loop would have trained on an old table and never settled. Fixed:
+  `live_seasons` refetch once per run; fixtures feed cached per run hour (an evening run must see
+  the afternoon's prices).
+- *Prediction log added* (`data/predictions.jsonl`): the plan only logged bets. Every priced
+  fixture is now recorded with the de-vigged market view, so calibration can be measured on the
+  unselected sample. First priced sighting wins.
+- *Local cron instead of CI* (08:47/17:47, `scripts/run_matchday.sh`, flock, never commits),
+  because the CI schedule is inert without a remote. Undo: `crontab -l | grep -v 'match-scout' |
+  crontab -`; pre-change backup in `logs/crontab.backup-2026-09-27`.
+- *Dashboard panel in English, Spieltag page in German:* the dashboard is the English portfolio
+  surface; the Spieltag page is Nico's own matchday view.
+- *Tasks 10–12 left open:* work stopped when the auto-mode permission classifier began denying
+  further reads in the session (it flagged the crontab entry as unauthorized persistence).
+
+**Open items.** Tasks 10–12; Pages deploy + weekly re-eval in `pipeline.yml`; `timestamp_known`
+imputation for the backtest (D7 remainder); decide cron vs. CI once a remote exists.

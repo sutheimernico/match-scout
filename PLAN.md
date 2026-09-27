@@ -36,11 +36,13 @@ Goal: canonical, source-agnostic match + odds tables from free sources, behind a
       `FootballDataCoUk` provider, read-through `.cache/` cache, `scripts/ingest.py` CLI. VERIFIED
       LIVE: ingested Top-5 × {2324 flat, 1718 Bb} = 3578 matches / 78,023 odds rows, schema-valid,
       0 lookahead violations, Pinnacle-closing present in both eras. 11 tests.
-- [ ] Read-through cache freshness (extends the above): skip complete past seasons, refresh current
-      season vs. injected run-date. Basic exists-or-fetch + `refresh` flag done; season-freshness
-      logic deferred to the forward loop (Phase 6).
-- [ ] Odds-timestamp data-quality check (D7): measure pre-`C` vs `C` odds gap/variance; confirm
-      pre-match columns precede kickoff; document `timestamp_known` imputation (kickoff − N h).
+- [x] Read-through cache freshness (extends the above): skip complete past seasons, refresh current
+      season vs. injected run-date. DONE 2026-09-27: `FootballDataCoUk(live_seasons=…)` refetches
+      the running season once per run; the fixtures feed is cached per run hour.
+- [x] Odds-timestamp data-quality check (D7): measure pre-`C` vs `C` odds gap/variance. DONE
+      2026-09-27 (`evaluation/odds_gap.py`, `data/odds_gap_report.json`): median |Δp| 1.2–1.3 pp
+      (1X2) / 1.8–2.1 pp (O/U), 57–74 % move ≥1 pp, no weak segment. `timestamp_known` imputation
+      for the backtest NOT done — the forward loop records real timestamps instead.
 - [ ] Canonical `data_quality` report (schema + validators DONE in iter 1): missing-odds rate,
       void/postponed flags, dedupe, promoted/relegated team continuity.
 - [x] football-data.org fetcher (key-gated): CL/WC/EC fixtures/results → canonical `matches`
@@ -108,9 +110,10 @@ Goal: walk-forward bankroll simulation over the Top-5, honest metrics, baselines
       closing feeds ONLY CLV. DONE 2026-07-05 (`backtest/engine.py`).
 - [x] Bankroll + staking: **flat = headline**; 0.25-Kelly SECONDARY (edge-shrink hook, per-bet cap
       ≤5%, D10). DONE 2026-07-05 (`backtest/staking.py`).
-- [ ] Trial log + whole-harness anti-overfit (D1): log EVERY config tried, counting subgroup slices
+- [x] Trial log + whole-harness anti-overfit (D1): log EVERY config tried, counting subgroup slices
       as trials; rising significance hurdle (DSR/PBO analog) on the Dixon-Coles path; pre-register /
-      design-vs-holdout split. STILL OPEN — threshold/min_train/half-life knobs not yet trial-logged.
+      design-vs-holdout split. DONE 2026-09-20 (`evaluation/trial_log.py`, `evaluation/dsr.py`,
+      ADR 0003; 8 logged trials, hurdle not met).
 - [x] Metrics + verdict (D2): yield-with-bootstrap-CI, drawdown, CLV + CLV beat-rate, min-bet-count
       CI-vs-0 verdict. DONE 2026-07-05 (`backtest/metrics.py`).
 - [x] Leak guards (D3): hard fit-window (walk-forward no-lookahead PROVEN by test) + odds-provenance
@@ -152,12 +155,15 @@ negative result, reported not hidden.
 
 Goal: stateful, idempotent loop that accumulates real-time P&L.
 
-- [ ] Verify: does the current-season football-data.co.uk CSV include unplayed fixtures with
-      pre-match odds? If yes → bet Top-5 with no key. If no → fixtures via football-data.org
-      (shadow-mode for those).
-- [ ] Forward loop: pull upcoming fixtures + pre-match odds → log bets at `timestamp_known` → settle
-      after results → snapshot bankroll. Idempotent (re-run on same date = no-op).
-- [ ] Persistent bet ledger + `bankroll_snapshots` as committable derived artifacts under `data/`.
+- [x] Verify: does the current-season football-data.co.uk CSV include unplayed fixtures with
+      pre-match odds? NO (verified 2026-09-20) — but the key-free `fixtures.csv` feed does, so the
+      Top-5 are bet without a key.
+- [x] Forward loop: pull upcoming fixtures + pre-match odds → log bets at `timestamp_known` → settle
+      after results → snapshot bankroll. Idempotent (re-run on same date = no-op). DONE
+      (`forward/loop.py`, `scripts/run_forward.py`); every predicted fixture also goes to
+      `data/predictions.jsonl`. Local cron 08:47/17:47 via `scripts/run_matchday.sh`.
+- [x] Persistent bet ledger + `bankroll_snapshots` as committable derived artifacts under `data/`.
+      First 12 forward bets (2026-09-20) settled 2026-09-27: 1 won, −105u, CLV beat 0/12.
 - [x] CL/WM shadow-mode tips: DONE 2026-07-05 (`tips.py` `fixture_tips` + `scripts/tips.py`; fit
       Dixon-Coles on played org history, predict scheduled fixtures — probs + pick + most-likely
       score, no stake). LIVE: WC 2026 tips produced for the remaining knockout matches (7 with known
@@ -165,15 +171,18 @@ Goal: stateful, idempotent loop that accumulates real-time P&L.
       → overconfident (e.g. Brazil 98%); directional only, not calibrated like the league backtest.
       National-team ratings come from int'l matches (not the club model); no cross-source name issue
       (org names are self-consistent).
-- [ ] Tests: idempotency, settle-on-result, dedupe by `bet_id`.
+- [x] Tests: idempotency, settle-on-result, dedupe by `bet_id`. DONE (`tests/forward/`).
 Acceptance: `scripts/run_forward.py` advances one matchday, is safe to re-run, writes the ledger.
+— MET 2026-09-27.
 
 ## Phase 7 — GitHub Actions pipeline (Needs Nico: remote + key)
 
-- [ ] `ci.yml`: uv sync + ruff + pytest on push/PR.
-- [ ] `pipeline.yml`: cron ingest + forward-settle + publish; weekly full re-eval; git-scraping
-      derived artifacts back (raw CSVs stay out); Issues-on-failure (create `pipeline` label once).
-- [ ] `.env.example` + secret wiring for `X-Auth-Token` (optional CL/WM).
+- [x] `ci.yml`: uv sync + ruff + pytest on push/PR (+ site build). DONE 2026-09-27, inert.
+- [x] `pipeline.yml`: cron forward-settle + Spieltag page; git-scraping derived artifacts back
+      (raw CSVs stay out); Issues-on-failure (create `pipeline` label once). DONE 2026-09-27, inert.
+      NOT included: Pages deploy, weekly full re-eval (add when the remote exists).
+- [x] `.env.example` + secret wiring for `X-Auth-Token` (optional CL/WM) — exists; the forward
+      pipeline itself needs no key.
 Acceptance: workflows valid; documented; first scheduled run is a Needs-Nico gate (remote + key).
 
 ## Phase 8 — Dashboard
@@ -184,6 +193,10 @@ Acceptance: workflows valid; documented; first scheduled run is a Needs-Nico gat
       advance / all O/U lines / BTTS / top scores / combo) + honest-harness story (yield-CI, CLV
       beat-rate, verdict, bankroll curve). DONE 2026-07-05 (`site/`).
 - [x] Disclaimer banner on every view. DONE.
+- [x] Live paper-record panel (empty/pending/settled) + German `site/public/spieltag.html`, both
+      from the committed ledgers (`scripts/spieltag.py`). DONE 2026-09-27.
+- [ ] Calibration reliability plots, CLV deep-dive, subgroup explorer (plan 2026-07-21 Tasks
+      10–12) — OPEN.
 Acceptance: MET 2026-07-05 — `npm --prefix site run build` passes (tsc strict + vite); preview
 serves index + `data/*.json` + JS bundle all 200 (verified). Deploy to Pages = Needs Nico (remote).
 
