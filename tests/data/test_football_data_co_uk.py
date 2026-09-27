@@ -191,3 +191,38 @@ def test_season_code_follows_the_august_to_may_season():
     assert fd.season_code("2027-01-05") == "2627"
     assert fd.season_code("2027-07-01") == "2728"
     assert fd.previous_season_code("2627") == "2526"
+
+
+def test_a_live_season_is_refetched_once_per_provider_not_served_stale(tmp_path):
+    # The running season's CSV grows every matchday; a stale cache would silently stop the
+    # forward loop from ever settling. One fetch per provider (i.e. per run), not per call.
+    path = tmp_path / "football_data_co_uk" / "2324" / "E0.csv"
+    path.parent.mkdir(parents=True)
+    path.write_text("Div,Date,HomeTeam,AwayTeam,FTHG,FTAG\n")  # stale: no matches yet
+    client, calls = _mock_client(_FLAT_CSV.encode())
+    prov = fd.FootballDataCoUk(tmp_path, client=client, live_seasons={"2324"})
+    assert len(prov.fetch_matches("E0", "2324")) == 1
+    assert not prov.fetch_odds("E0", "2324").empty
+    assert calls["n"] == 1
+
+
+def test_a_finished_season_is_served_from_cache(tmp_path):
+    path = tmp_path / "football_data_co_uk" / "2324" / "E0.csv"
+    path.parent.mkdir(parents=True)
+    path.write_text(_FLAT_CSV)
+    client, calls = _mock_client(b"")
+    prov = fd.FootballDataCoUk(tmp_path, client=client, live_seasons={"2425"})
+    assert len(prov.fetch_matches("E0", "2324")) == 1
+    assert calls["n"] == 0
+
+
+def test_the_fixtures_feed_is_fetched_fresh_for_a_later_run_the_same_day(tmp_path):
+    # Prices for a weekend are published on the Friday afternoon; an evening run that reused
+    # the morning's snapshot would never see them.
+    body = b"Div,Date,Time,HomeTeam,AwayTeam\nE0,03/10/2026,15:00,Arsenal,Chelsea\n"
+    client, calls = _mock_client(body)
+    fd.fetch_fixtures_raw(tmp_path, run_date="2026-10-02T06:47:00Z", client=client)
+    fd.fetch_fixtures_raw(tmp_path, run_date="2026-10-02T06:59:00Z", client=client)
+    fd.fetch_fixtures_raw(tmp_path, run_date="2026-10-02T15:47:00Z", client=client)
+    assert calls["n"] == 2
+    assert len(list((tmp_path / "football_data_co_uk" / "fixtures").iterdir())) == 2

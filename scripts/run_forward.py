@@ -71,7 +71,7 @@ def main(
     )
     result = run_forward(
         now=run_at,
-        history=FootballDataCoUk(CACHE),
+        history=FootballDataCoUk(CACHE, live_seasons={current}),
         fixtures=FootballDataCoUkFixtures(CACHE, run_date=run_at),
         config=config,
         bets_path=bets_path,

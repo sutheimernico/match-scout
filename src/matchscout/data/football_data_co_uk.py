@@ -15,7 +15,7 @@ from __future__ import annotations
 import codecs
 import io
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -277,14 +277,16 @@ def fetch_fixtures_raw(
     retries: int = 3,
     sleep: Callable[[float], None] = time.sleep,
 ) -> pd.DataFrame:
-    """Fetch the upcoming-fixtures CSV (all divisions), cached per run date.
+    """Fetch the upcoming-fixtures CSV (all divisions), cached per run hour.
 
     This file is what makes a key-free forward loop possible: the season CSVs carry played
     matches only — verified 2026-09-20, the live 2026/27 E0 file had zero unplayed rows — while
     this one carries the next few days of fixtures WITH pre-match prices. It is volatile (rows
-    disappear as matches play), so the cache is keyed by the run date, never by season.
+    appear when the source publishes a matchday's prices and disappear as matches play), so the
+    cache is keyed by the run hour: a morning and an evening run each see the feed as it was
+    then, and each snapshot stays on disk as the record of what the loop could have known.
     """
-    stamp = pd.Timestamp(run_date).strftime("%Y%m%d")
+    stamp = pd.Timestamp(run_date).strftime("%Y%m%dT%H")
     path = Path(cache_dir) / "football_data_co_uk" / "fixtures" / f"{stamp}.csv"
     if path.exists() and not refresh:
         return _read_csv(path.read_bytes())
@@ -333,17 +335,39 @@ class FootballDataCoUkFixtures:
 
 
 class FootballDataCoUk:
-    """MatchProvider + OddsProvider backed by cached football-data.co.uk season CSVs."""
+    """MatchProvider + OddsProvider backed by cached football-data.co.uk season CSVs.
 
-    def __init__(self, cache_dir: Path, *, client: httpx.Client | None = None) -> None:
+    `live_seasons` are re-fetched once per provider instance: a finished season's file never
+    changes, but the running season's file grows every matchday, and a cache that never
+    refreshes it would leave the forward loop training on last week and never settling a bet.
+    """
+
+    def __init__(
+        self,
+        cache_dir: Path,
+        *,
+        client: httpx.Client | None = None,
+        live_seasons: Collection[str] = (),
+    ) -> None:
         self.cache_dir = Path(cache_dir)
         self._client = client
+        self._live = frozenset(live_seasons)
+        self._loaded: dict[tuple[str, str], tuple[pd.DataFrame, pd.DataFrame]] = {}
 
     def _load(self, competition: str, season: str) -> tuple[pd.DataFrame, pd.DataFrame]:
         if competition not in DIVISIONS:
             raise KeyError(f"unknown competition {competition!r}; known: {sorted(DIVISIONS)}")
-        raw = fetch_raw(season, DIVISIONS[competition], self.cache_dir, client=self._client)
-        return parse(raw, competition, season)
+        key = (competition, season)
+        if key not in self._loaded:
+            raw = fetch_raw(
+                season,
+                DIVISIONS[competition],
+                self.cache_dir,
+                client=self._client,
+                refresh=season in self._live,
+            )
+            self._loaded[key] = parse(raw, competition, season)
+        return self._loaded[key]
 
     def fetch_matches(self, competition: str, season: str) -> pd.DataFrame:
         return self._load(competition, season)[0]
