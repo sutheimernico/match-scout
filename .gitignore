@@ -34,3 +34,6 @@ site/dist/
 
 # OS
 .DS_Store
+
+# Local cron logs of the forward loop (scripts/run_matchday.sh)
+/logs/
