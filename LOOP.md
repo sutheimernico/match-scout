@@ -6,7 +6,7 @@ in context.
 
 ## Per-iteration protocol
 
-1. Read `~/private/AUTOPILOT.md` (global rules), then this `LOOP.md`, then `PLAN.md` + `PROJECT.md`.
+1. Read `AUTOPILOT.md` (author's global loop rules, not part of this repo) (global rules), then this `LOOP.md`, then `PLAN.md` + `PROJECT.md`.
 2. Confirm you are on branch `autopilot/work` (the runner guarantees this; if not, stop).
 3. Pick the SINGLE highest-value open `- [ ]` task (top-to-bottom, earlier phases first). If a phase
    boundary is reached, run the once-per-phase self-challenge/SOTA step first (write an ADR if it

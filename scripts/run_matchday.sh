@@ -6,8 +6,8 @@
 #
 # Registered in the user crontab (see README "Jeden Spieltag"):
 #   47 8,17 * * * flock -n /tmp/match-scout-forward.lock \
-#     ~/private/match-scout/scripts/run_matchday.sh \
-#     >> ~/private/match-scout/logs/forward.log 2>&1
+#     /path/to/match-scout/scripts/run_matchday.sh \
+#     >> /path/to/match-scout/logs/forward.log 2>&1
 #
 # It writes data/*.jsonl and site/public/ but never commits: an unattended commit on whatever
 # branch happens to be checked out is exactly the accident the git rules forbid.

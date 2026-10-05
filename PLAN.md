@@ -1,7 +1,7 @@
 # match-scout — Plan (AUTOPILOT-driven build backlog)
 
 **Source of truth for design:** `docs/superpowers/specs/2026-07-05-match-scout-design.md`
-Personal rules (`~/.claude/CLAUDE.md`) + global loop rules (`~/private/AUTOPILOT.md`) apply.
+Personal rules (the author's global CLAUDE.md) + global loop rules (`AUTOPILOT.md` (author's global loop rules, not part of this repo)) apply.
 
 This file is the binding backlog for the autonomous loop. Each iteration picks the SINGLE
 highest-value open `- [ ]` task, does it on `autopilot/work`, runs the gate, commits only if green,
@@ -204,8 +204,8 @@ serves index + `data/*.json` + JS bundle all 200 (verified). Deploy to Pages = N
 
 - [ ] README polish (blockquote disclaimer, honest-harness table, badges, screenshots, reproduction).
 - [ ] Secret scan over history; credit football-data.co.uk; confirm no raw CSVs committed.
-- [ ] Portfolio entry (add to `~/private/portfolio`).
-Acceptance: publish checklist (see `~/.claude/CLAUDE.md`) satisfied; Needs-Nico for the public flip.
+- [ ] Portfolio entry (add to the author's portfolio).
+Acceptance: publish checklist (see the author's global CLAUDE.md) satisfied; Needs-Nico for the public flip.
 
 ## Standing mandate (per AUTOPILOT, once per phase — not per iteration)
 

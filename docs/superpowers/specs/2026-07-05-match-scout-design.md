@@ -1,7 +1,7 @@
 # match-scout — Design (Spec)
 
 **Stand:** 2026-07-05 · **Status:** Design locked, scaffold on `autopilot/work`, Phase 1 next.
-Personal rules (`~/.claude/CLAUDE.md`) + global loop rules (`~/private/AUTOPILOT.md`) apply.
+Personal rules (the author's global CLAUDE.md) + global loop rules (`AUTOPILOT.md` (author's global loop rules, not part of this repo)) apply.
 
 ---
 

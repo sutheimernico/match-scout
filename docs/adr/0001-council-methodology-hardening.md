@@ -4,7 +4,7 @@
 
 ## Context
 
-At the Phase-0→1 boundary (per `~/private/AUTOPILOT.md` "once per phase, self-challenge / SOTA")
+At the Phase-0→1 boundary (per `AUTOPILOT.md` (author's global loop rules, not part of this repo) "once per phase, self-challenge / SOTA")
 a 3-model council stress-tested the design (spec `2026-07-05-match-scout-design.md` + `PLAN.md`):
 Opus 4.8 (methodology red-team), Sonnet 5 (football-modeling practitioner, verified claims against
 the live football-data.co.uk CSVs), Sonnet 5 (contrarian + SOTA scan). The contrarian on Fable 5

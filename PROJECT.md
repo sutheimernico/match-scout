@@ -2,7 +2,7 @@
 
 **Stand:** 2026-07-05 · **Status:** scaffold on `autopilot/work`, gate green
 (`uv run pytest -q` + `uv run ruff check .`); Phase 1 (data layer) next.
-Personal rules (`~/.claude/CLAUDE.md`) + global loop rules (`~/private/AUTOPILOT.md`) apply.
+Personal rules (the author's global CLAUDE.md) + global loop rules (`AUTOPILOT.md` (author's global loop rules, not part of this repo)) apply.
 Design depth: `docs/superpowers/specs/2026-07-05-match-scout-design.md`. Working method: below.
 Latest iteration log: `AUTOPILOT_LOG.md`.
 

@@ -67,7 +67,7 @@ with model vs. market probabilities, open paper bets, settled bets with CLV, and
 with n and confidence intervals:
 
 ```bash
-explorer.exe "$(wslpath -w ~/private/match-scout/site/public/spieltag.html)"   # from WSL
+explorer.exe "$(wslpath -w site/public/spieltag.html)"   # from WSL
 npm --prefix site run dev   # or via the dashboard: <printed URL>/spieltag.html
 ```
 
