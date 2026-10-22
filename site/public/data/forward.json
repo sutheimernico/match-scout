@@ -1,30 +1,30 @@
 {
-  "generated_at": "2026-10-21T20:14:31.320719+00:00",
+  "generated_at": "2026-10-22T13:02:31.142133+00:00",
   "state": "settled",
   "since": "2026-09-20",
   "start_bankroll": 1000.0,
   "bets": {
-    "n_bets": 158,
-    "total_staked": 1580.0,
-    "profit": -322.8,
-    "yield": -0.20430379746835445,
+    "n_bets": 159,
+    "total_staked": 1590.0,
+    "profit": -298.8,
+    "yield": -0.1879245283018868,
     "yield_ci": [
-      -0.3951946202531646,
-      0.007912974683544296
+      -0.3886320754716981,
+      0.02290723270440244
     ],
-    "final_bankroll": 677.1999999999999,
+    "final_bankroll": 701.1999999999999,
     "max_drawdown": -0.35232323232323237,
-    "clv_mean": -0.052419791123444866,
-    "clv_beat_rate": 0.2088607594936709,
-    "n_with_clv": 158,
-    "n_won": 52,
-    "n_pending": 3,
+    "clv_mean": -0.0521711193427248,
+    "clv_beat_rate": 0.20754716981132076,
+    "n_with_clv": 159,
+    "n_won": 53,
+    "n_pending": 2,
     "n_void": 0,
     "n_no_odds": 0,
     "clv_books": {
-      "Avg": 158
+      "Avg": 159
     },
-    "verdict": "Yield 95% CI [-0.395, 0.008] straddles 0 \u2014 no evidence of an edge (the expected honest finding).",
+    "verdict": "Yield 95% CI [-0.389, 0.023] straddles 0 \u2014 no evidence of an edge (the expected honest finding).",
     "curve": [
       {
         "date": "2026-09-20",
@@ -657,20 +657,24 @@
       {
         "date": "2026-10-19",
         "profit": -322.8
+      },
+      {
+        "date": "2026-10-21",
+        "profit": -298.8
       }
     ]
   },
   "calibration": {
-    "n": 95,
-    "brier_model": 0.5748545283827335,
-    "brier_market": 0.5273726500715736,
-    "brier_diff": 0.04748187831115995,
+    "n": 96,
+    "brier_model": 0.5737272483316267,
+    "brier_market": 0.5301491577159485,
+    "brier_diff": 0.04357809061567816,
     "brier_diff_ci": [
-      0.010683648867947601,
-      0.0870561741709774
+      0.005725631804218473,
+      0.08274300922947175
     ],
-    "hit_rate_model": 0.5578947368421052,
-    "hit_rate_market": 0.6421052631578947,
+    "hit_rate_model": 0.5625,
+    "hit_rate_market": 0.6354166666666666,
     "verdict": "Market better calibrated than the model \u2014 CI excludes 0 (the expected finding)."
   }
 }
