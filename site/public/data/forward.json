@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-05T22:06:47.049553+00:00",
+  "generated_at": "2026-11-06T15:10:26.789359+00:00",
   "state": "settled",
   "since": "2026-09-20",
   "start_bankroll": 1000.0,
@@ -18,7 +18,7 @@
     "clv_beat_rate": 0.22508038585209003,
     "n_with_clv": 311,
     "n_won": 118,
-    "n_pending": 0,
+    "n_pending": 69,
     "n_void": 2,
     "n_no_odds": 0,
     "clv_books": {
