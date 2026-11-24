@@ -1,30 +1,30 @@
 {
-  "generated_at": "2026-11-23T19:19:57.129291+00:00",
+  "generated_at": "2026-11-24T18:57:41.736686+00:00",
   "state": "settled",
   "since": "2026-09-20",
   "start_bankroll": 1000.0,
   "bets": {
-    "n_bets": 438,
-    "total_staked": 4380.0,
-    "profit": -510.0,
-    "yield": -0.11643835616438356,
+    "n_bets": 442,
+    "total_staked": 4420.0,
+    "profit": -474.80000000000007,
+    "yield": -0.10742081447963803,
     "yield_ci": [
-      -0.23284589041095893,
-      0.0166501141552511
+      -0.23294174208144794,
+      0.018670248868778244
     ],
-    "final_bankroll": 490.00000000000006,
+    "final_bankroll": 525.2,
     "max_drawdown": -0.5164646464646464,
-    "clv_mean": -0.05870445565359343,
-    "clv_beat_rate": 0.21689497716894976,
-    "n_with_clv": 438,
-    "n_won": 157,
-    "n_pending": 4,
+    "clv_mean": -0.05832556689875652,
+    "clv_beat_rate": 0.2171945701357466,
+    "n_with_clv": 442,
+    "n_won": 160,
+    "n_pending": 0,
     "n_void": 2,
     "n_no_odds": 0,
     "clv_books": {
-      "Avg": 438
+      "Avg": 442
     },
-    "verdict": "Yield 95% CI [-0.233, 0.017] straddles 0 \u2014 no evidence of an edge (the expected honest finding).",
+    "verdict": "Yield 95% CI [-0.233, 0.019] straddles 0 \u2014 no evidence of an edge (the expected honest finding).",
     "curve": [
       {
         "date": "2026-09-20",
@@ -1777,20 +1777,36 @@
       {
         "date": "2026-11-22",
         "profit": -510.0
+      },
+      {
+        "date": "2026-11-23",
+        "profit": -498.5
+      },
+      {
+        "date": "2026-11-23",
+        "profit": -508.5
+      },
+      {
+        "date": "2026-11-23",
+        "profit": -481.0
+      },
+      {
+        "date": "2026-11-23",
+        "profit": -474.8
       }
     ]
   },
   "calibration": {
-    "n": 290,
-    "brier_model": 0.564496754743373,
-    "brier_market": 0.5349490320207261,
-    "brier_diff": 0.029547722722646868,
+    "n": 293,
+    "brier_model": 0.565199848044019,
+    "brier_market": 0.5368689163120609,
+    "brier_diff": 0.02833093173195814,
     "brier_diff_ci": [
-      0.011087697207383835,
-      0.04744181945888705
+      0.010590677622526443,
+      0.04673410571454227
     ],
-    "hit_rate_model": 0.5689655172413793,
-    "hit_rate_market": 0.6068965517241379,
+    "hit_rate_model": 0.5665529010238908,
+    "hit_rate_market": 0.6040955631399317,
     "verdict": "Market better calibrated than the model \u2014 CI excludes 0 (the expected finding)."
   }
 }
